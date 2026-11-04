@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 960">
+  <defs>
+    <linearGradient id="home" x1="150" y1="200" x2="620" y2="830" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="link" x1="450" y1="530" x2="840" y2="730" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+    <!-- the house passes under the link at the upper crossing -->
+    <mask id="homeCut" maskUnits="userSpaceOnUse" x="0" y="0" width="960" height="960">
+      <rect width="960" height="960" fill="#fff"/>
+      <path d="M530 540 H650" stroke="#000" stroke-width="112"/>
+    </mask>
+    <!-- the link passes under the house at the lower crossing -->
+    <mask id="linkCut" maskUnits="userSpaceOnUse" x="0" y="0" width="960" height="960">
+      <rect width="960" height="960" fill="#fff"/>
+      <path d="M590 670 V770" stroke="#000" stroke-width="112"/>
+    </mask>
+  </defs>
+  <g transform="translate(-20 -30)">
+    <rect x="460" y="540" width="370" height="180" rx="90" fill="none" stroke="url(#link)" stroke-width="64" mask="url(#linkCut)"/>
+    <path d="M170 820 H590 V410 L380 210 L170 410 Z" fill="none" stroke="url(#home)" stroke-width="64" stroke-linejoin="round" mask="url(#homeCut)"/>
+    <circle cx="320" cy="650" r="46" fill="url(#link)"/>
+  </g>
+</svg>

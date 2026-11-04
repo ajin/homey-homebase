@@ -1,0 +1,691 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+  <style>
+    /* Everything lives under #sl and resets Homey's injected form/button styles. */
+    #sl {
+      --bg: #f4f4f7; --surface: #ffffff; --surface-2: #ececf2; --text: #16161b; --muted: #6c6c78;
+      --line: rgba(0,0,0,.08); --accent: #ff7a1a; --accent-2: #ffb347; --on-accent: #1a0f05;
+      --danger: #e5484d; --night: #101119; --night-2: #1a1c28; --shadow: 0 6px 20px rgba(20,20,40,.08);
+      --radius: 18px; --rail: #d9d9e3;
+    }
+    /* Dark theme: set from JS (data-theme), following Homey or the header switch. */
+    #sl[data-theme="dark"] {
+      --bg: #0d0e13; --surface: #17181f; --surface-2: #262833; --text: #f3f3f6; --muted: #9b9ba8;
+      --line: rgba(255,255,255,.07); --night: #07080c; --night-2: #12131b; --shadow: 0 6px 24px rgba(0,0,0,.35);
+      --rail: #383a46; color-scheme: dark;
+    }
+    #sl[data-theme="light"] { color-scheme: light; }
+    html, body { margin: 0; padding: 0; }
+    #sl, #sl * { box-sizing: border-box; }
+    #sl { min-height: 100vh; background: var(--bg); color: var(--text);
+      font: 15px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased; padding: 0 0 calc(90px + env(safe-area-inset-bottom)); }
+    #sl button, #sl input, #sl select { all: unset; box-sizing: border-box; font: inherit; color: inherit; }
+    #sl button { cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
+    #sl h1, #sl h2, #sl h3, #sl p, #sl label { margin: 0; padding: 0; font-weight: inherit; border: 0; color: inherit;
+      text-transform: none; background: none; }
+
+    /* header */
+    .top { padding: 18px 18px 6px; }
+    .title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); flex: none; }
+    #sl .seg button { height: 28px; min-width: 32px; padding: 0 10px; border-radius: 999px; display: inline-flex;
+      align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+    #sl .seg button.on { background: var(--text); color: var(--bg); }
+    #sl .top h1 { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+    #sl .top p { color: var(--muted); font-size: 14px; margin-top: 2px; }
+    /* the light this studio works on */
+    .device { position: relative; display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 14px;
+      border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+    .device .ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+    .device .dn, .device .dm { display: block; }
+    .device .dn { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .device .dm { color: var(--muted); font-size: 12.5px; }
+    .device .grow { flex: 1; min-width: 0; }
+    .device .chev { color: var(--muted); font-size: 13px; font-weight: 700; }
+    #sl .backlink { padding: 4px 0; font-weight: 700; color: var(--accent); font-size: 15px; }
+    #sl .top .hint-top { margin-top: 10px; }
+    #sl [hidden] { display: none !important; }
+
+    /* start screen: one card per device */
+    .lights { display: grid; gap: 12px; padding: 6px 18px 0; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    #sl .light { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: var(--radius);
+      background: var(--surface); box-shadow: var(--shadow); text-align: left; width: 100%; }
+    #sl .light:active { transform: scale(.98); }
+    #sl .light.none { cursor: default; color: inherit; }
+    #sl .light.none:active { transform: none; }
+    .light .ic { flex: none; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center;
+      justify-content: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+    .light.off .ic { background: var(--surface-2); color: var(--muted); }
+    .light .grow { flex: 1; min-width: 0; }
+    .light .ln { display: block; font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .light .lm, .light .ls { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .light .ls.live { color: var(--accent); font-weight: 600; }
+    .light .go { flex: none; color: var(--muted); font-size: 22px; line-height: 1; }
+
+    /* category chips */
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 18px 14px; scrollbar-width: none; position: sticky;
+      top: 0; z-index: 5; background: linear-gradient(var(--bg) 80%, transparent); }
+    .chips::-webkit-scrollbar { display: none; }
+    #sl .chip { flex: none; padding: 8px 14px; border-radius: 999px; background: var(--surface); color: var(--text);
+      font-size: 14px; font-weight: 600; box-shadow: var(--shadow); transition: background .15s, color .15s; }
+    #sl .chip.on { background: var(--text); color: var(--bg); }
+
+    /* cards */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; padding: 0 18px; }
+    .card { position: relative; background: var(--surface); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); cursor: pointer; transition: transform .12s ease; -webkit-tap-highlight-color: transparent; }
+    .card:active { transform: scale(.98); }
+    .card.playing { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+    .card canvas { display: block; width: 100%; height: 78px; background: radial-gradient(120% 140% at 50% 0%, var(--night-2), var(--night)); }
+    .card .info { display: flex; align-items: center; gap: 10px; padding: 11px 14px 13px; }
+    .card .title { flex: 1; min-width: 0; }
+    .card .name { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card .meta { color: var(--muted); font-size: 12.5px; }
+    #sl .card .edit { padding: 7px 12px; border-radius: 999px; background: var(--surface-2); font-size: 13px; font-weight: 600; }
+    .badge { position: absolute; top: 10px; left: 10px; padding: 3px 9px; border-radius: 999px; font-size: 11px;
+      font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--accent); color: var(--on-accent); }
+    .create { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
+      min-height: 128px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+    .create .plus { font-size: 34px; font-weight: 300; line-height: 1; }
+    .create .lbl { font-weight: 700; }
+    .empty { grid-column: 1 / -1; color: var(--muted); text-align: center; padding: 10px 20px 0; font-size: 14px; }
+    .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 22px 28px 0; }
+
+    /* inline controls on the playing card */
+    .controls { display: flex; align-items: center; gap: 12px; padding: 0 14px 14px; cursor: default; }
+    .speed { flex: 1; display: flex; align-items: center; gap: 8px; color: var(--muted); }
+    .speed svg { flex: none; width: 18px; height: 18px; }
+    .speed-val { flex: none; width: 34px; text-align: right; font-size: 13px; font-weight: 700; color: var(--text);
+      font-variant-numeric: tabular-nums; }
+    #sl .stopbtn { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center; }
+    #sl .stopbtn::before { content: ""; width: 11px; height: 11px; border-radius: 2px; background: var(--text); }
+    .speedrow { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+
+    /* small "playing elsewhere" pill */
+    .pill { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 20; transform: translateX(-50%);
+      display: none; align-items: center; gap: 4px; max-width: calc(100% - 32px); padding: 5px 5px 5px 14px; border-radius: 999px;
+      background: var(--text); color: var(--bg); box-shadow: 0 8px 28px rgba(0,0,0,.3); font-size: 14px; }
+    .pill.show { display: flex; }
+    .pill .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; margin-right: 4px;
+      animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .35; } }
+    .pill .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+    #sl .pill button { flex: none; padding: 7px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+    #sl .pill .show-btn { background: rgba(127,127,127,.25); margin-left: 6px; }
+
+    /* range */
+    #sl input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: 28px; background: transparent; }
+    #sl input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: var(--track, var(--surface-2)); }
+    #sl input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -8px;
+      border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.3); }
+    #sl input[type=range]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--track, var(--surface-2)); }
+    #sl input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
+    /* filled up to the thumb: --p is set from JS */
+    .speed-track { --track: linear-gradient(90deg, var(--accent) var(--p, 80%), var(--rail) var(--p, 80%)); }
+    .hue-track { --track: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); }
+
+    /* editor sheet */
+    .sheet { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; transform: translateY(100%);
+      transition: transform .28s cubic-bezier(.2,.8,.2,1); padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+    .sheet.open { transform: none; }
+    .sheet-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 14px 10px; background: var(--bg); }
+    #sl .back { padding: 8px 6px; font-weight: 600; color: var(--muted); }
+    #sl .sheet-head h2 { font-size: 17px; font-weight: 800; }
+    #sl .save { padding: 9px 18px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 800; }
+    #sl .save[disabled] { opacity: .45; pointer-events: none; }
+    .hero { margin: 0 14px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+    .hero canvas { display: block; width: 100%; height: 110px; background: radial-gradient(120% 140% at 50% 0%, var(--night-2), var(--night)); }
+    .section { margin: 18px 14px 0; background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+    #sl .section h3 { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    #sl .name-input { display: block; width: 100%; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 16px; }
+    .picked { display: flex; flex-wrap: wrap; gap: 10px; min-height: 46px; }
+    #sl .dot { position: relative; width: 44px; height: 44px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25), 0 2px 8px rgba(0,0,0,.2); }
+    #sl .dot.sel { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text); }
+    #sl .dot .rm { position: absolute; right: -4px; top: -4px; width: 20px; height: 20px; border-radius: 50%; background: var(--text);
+      color: var(--bg); font-size: 13px; line-height: 20px; text-align: center; font-weight: 800; }
+    .hint { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+    .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 10px; margin-top: 12px; }
+    #sl .pal { width: 100%; aspect-ratio: 1; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.2); }
+    /* light theme: outline swatches so white and pale colours stay visible */
+    #sl[data-theme="light"] .pal { box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.14); }
+    #sl[data-theme="light"] .dot:not(.sel) { box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.12); }
+    .tune { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .patterns { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .patterns::-webkit-scrollbar { display: none; }
+    #sl .pat { flex: none; width: 46px; height: 46px; border-radius: 14px; background: var(--surface-2); font-weight: 700;
+      display: flex; align-items: center; justify-content: center; }
+    #sl .pat.on { background: var(--text); color: var(--bg); }
+    #sl .pat-name { margin-top: 10px; font-weight: 700; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    #sl .switch { position: relative; width: 50px; height: 30px; border-radius: 999px; background: var(--surface-2); flex: none; transition: background .15s; }
+    #sl .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); transition: transform .15s; }
+    #sl .switch.on { background: var(--accent); }
+    #sl .switch.on::after { transform: translateX(20px); }
+    #sl .delete { display: block; margin: 22px auto 0; padding: 10px 18px; color: var(--danger); font-weight: 700; }
+
+    #toast { position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top)); transform: translate(-50%, -20px);
+      z-index: 50; padding: 9px 16px; border-radius: 999px; background: var(--text); color: var(--bg); font-size: 14px;
+      font-weight: 600; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; }
+    #toast.show { opacity: .95; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+<div id="sl">
+  <!-- start screen: choose a device -->
+  <div id="home">
+    <div class="top">
+      <div class="title-row">
+        <h1>Devices</h1>
+      <div class="seg" id="theme" role="group" aria-label="Appearance">
+        <button data-v="auto" title="Follow Homey">Auto</button>
+        <button data-v="light" title="Light" aria-label="Light"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button data-v="dark" title="Dark" aria-label="Dark"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      </div>
+      </div>
+      <p>Choose a device to open it.</p>
+    </div>
+    <div class="lights" id="lights"></div>
+  </div>
+
+  <!-- panel "effects": the effect studio of one light -->
+  <div id="studio" hidden>
+  <div class="top">
+    <button class="backlink" id="toDevices">‹ Devices</button>
+    <div class="device">
+      <span class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+      <span class="grow"><span class="dn" id="devName"></span><span class="dm" id="devModel"></span></span>
+    </div>
+    <p class="hint-top">Tap an effect to play it on this device.</p>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+  <p class="foot">Scenes and colours are the Surplife app's own. Previews show each scene's colours; the exact movement differs per pattern on the lights.</p>
+  </div>
+
+  <div class="pill" id="pill">
+    <span class="dot-live"></span><span class="txt" id="pillName"></span>
+    <button class="show-btn" id="pillShow">Show</button>
+    <button id="pillStop" aria-label="Stop">Stop</button>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div class="sheet-head">
+      <button class="back" id="edBack">‹ Effects</button>
+      <h2 id="edTitle">New effect</h2>
+      <button class="save" id="edSave">Save</button>
+    </div>
+    <div class="hero"><canvas id="edStrip"></canvas></div>
+
+    <div class="section">
+      <h3>Name</h3>
+      <input class="name-input" id="edName" maxlength="40" placeholder="e.g. Cosy evening" autocomplete="off">
+    </div>
+
+    <div class="section">
+      <h3>Colours <span id="edCount"></span></h3>
+      <div class="picked" id="edPicked"></div>
+      <div class="hint" id="edHint">Tap a colour below to add it. Tap a chosen colour to fine-tune or remove it.</div>
+      <div class="palette" id="edPalette"></div>
+      <div class="tune" id="edTune" style="display:none"><span>Hue</span><input type="range" class="hue-track" id="edHue" min="0" max="359"></div>
+    </div>
+
+    <div class="section">
+      <h3>Pattern</h3>
+      <div class="patterns" id="edPatterns"></div>
+      <div class="pat-name" id="edPatName"></div>
+      <div class="hint">Each number is one of the light's built-in animations.</div>
+    </div>
+
+    <div class="section">
+      <h3>Speed</h3>
+      <div class="speedrow"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Slow"><path d="M10 6l6 6-6 6"/></svg><input type="range" class="speed-track" id="edSpeed" min="1" max="100"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Fast"><path d="M3 6l6 6-6 6M10 6l6 6-6 6M17 6l6 6-6 6"/></svg></div>
+    </div>
+
+    <div class="section">
+      <div class="toggle-row">
+        <div><div style="font-weight:700">Live preview on lights</div><div class="hint" style="margin:2px 0 0">Changes show on the lights as you edit.</div></div>
+        <button class="switch on" id="edLive" aria-label="Live preview"></button>
+      </div>
+    </div>
+
+    <button class="delete" id="edDelete">Delete effect</button>
+  </div>
+  <div id="toast"></div>
+</div>
+
+<script>
+(function () {
+  const PRESETS = [
+    ['Red', 0, 100], ['Orange', 30, 100], ['Amber', 45, 100], ['Yellow', 60, 100], ['Lime', 90, 100],
+    ['Green', 120, 100], ['Teal', 160, 100], ['Cyan', 185, 100], ['Blue', 225, 100], ['Indigo', 255, 100],
+    ['Purple', 280, 100], ['Magenta', 310, 100], ['Pink', 335, 65], ['Warm white', 35, 30], ['White', 0, 0],
+  ];
+  let ORDER = ['mine', 'festival', 'patterns'];
+  let H = null;
+  let data = { categories: {}, patterns: [], effects: [], devices: [] };
+  let tab = 'festival';
+  let playing = null;      // library entry currently playing (or null = static colour)
+  let ed = null;           // editor state
+  let selected = -1;       // selected colour index in the editor
+  const strips = new Map(); // canvas -> preview state
+  const $ = (id) => document.getElementById(id);
+
+  // ---------------------------------------------------------------- helpers
+  function api(method, path, body) {
+    return new Promise((res, rej) => H.api(method, path, body || {}, (err, r) => (err ? rej(err) : res(r))));
+  }
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1700);
+  }
+  function rgb(h, s, v = 100) {
+    s /= 100; v /= 100; const c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c;
+    const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return [r + m, g + m, b + m].map((n) => Math.round(n * 255));
+  }
+  const css = (c) => `rgb(${rgb(c.h, c.s, c.v ?? 100).join(',')})`;
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  let deviceId = null;      // the light this studio works on
+  const target = () => deviceId || undefined;
+  const SLOW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></svg>';
+  const FAST = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6 6-6 6M10 6l6 6-6 6M17 6l6 6-6 6"/></svg>';
+  const fill = (input) => input.style.setProperty('--p', `${((input.value - input.min) / (input.max - input.min)) * 100}%`);
+  let playingSpeed = 80;   // speed of the effect that is playing
+  const errMsg = (e) => (e && e.message) || String(e);
+
+  // --------------------------------------------- string-light preview canvas
+  // Previews animate only while on screen, and the loop stops when nothing visible is left.
+  const seen = new IntersectionObserver((list) => {
+    list.forEach((en) => { const s = strips.get(en.target); if (s) s.visible = en.isIntersecting; });
+    kick();
+  });
+  function strip(canvas, get, opts = {}) {
+    const old = strips.get(canvas);
+    if (old) { old.get = get; old.opts = opts; kick(); return; } // e.g. the editor preview, reused
+    strips.set(canvas, { canvas, get, t: Math.random() * 20, opts, visible: false });
+    seen.observe(canvas);
+  }
+  function forget(canvas) { strips.delete(canvas); seen.unobserve(canvas); }
+  function draw(s, dt) {
+    const { canvas } = s; const e = s.get();
+    if (!canvas.isConnected) { forget(canvas); return; }
+    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const colours = e && e.colours && e.colours.length ? e.colours : null;
+    const n = s.opts.mini ? 7 : Math.max(14, Math.round(w / 16));
+    const amp = h * (s.opts.mini ? 0.12 : 0.17);
+    const pos = (i) => { const x = (i + 0.5) * (w / n); return [x, h * 0.42 + Math.sin((x / w) * Math.PI * 2.5) * amp]; };
+    ctx.strokeStyle = 'rgba(140,140,160,.35)'; ctx.lineWidth = 1.2; ctx.beginPath();
+    for (let i = 0; i <= 60; i++) { const x = (i / 60) * w; const y = h * 0.42 + Math.sin((x / w) * Math.PI * 2.5) * amp - 4; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+    if (!colours) {
+      for (let i = 0; i < n; i++) { const [x, y] = pos(i); ctx.fillStyle = 'rgba(255,225,180,.55)'; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 6.3); ctx.fill(); }
+      return;
+    }
+    s.t += dt * (0.35 + (e.speed || 60) / 30);
+    const cols = colours.map((c) => rgb(c.h, c.s, c.v ?? 100));
+    const t = s.t, L = cols.length;
+    const at = (k) => cols[((Math.floor(k) % L) + L) % L];
+    const blend = (k) => { const a = at(k), b = at(k + 1), f = k - Math.floor(k); return a.map((v, j) => Math.round(v + (b[j] - v) * f)); };
+    const r = s.opts.mini ? 3.2 : Math.min(6.5, h * 0.075);
+    for (let i = 0; i < n; i++) {
+      const [x, y] = pos(i); const u = i / n;
+      let c = at(i), a = 1;
+      switch (e.motion) {
+        case 'rainbow': c = blend(u * L + t * 0.9); break;
+        case 'gradient': c = blend(u * L * 0.6 + t * 0.25); break;
+        case 'flow': c = blend(u * L * 1.5 - t * 0.7); a = 0.7 + 0.3 * Math.sin(u * 12 - t * 3); break;
+        case 'fade': c = blend(t * 0.35); break;
+        case 'cycle': c = at(t * 0.8); break;
+        case 'breathe': c = at(t / 3.2); a = 0.12 + 0.88 * (0.5 - 0.5 * Math.cos(t * 2)); break;
+        case 'strobe': c = at(t * 3); a = (t * 3) % 1 < 0.3 ? 1 : 0.05; break;
+        case 'blink': { const g = i % 2; c = at(g + Math.floor(t * 1.5)); a = Math.floor(t * 1.5) % 2 === g ? 1 : 0.1; break; }
+        case 'chase': c = at(i / 3 + t * 2.5); a = 0.35 + 0.65 * Math.max(0, Math.sin(u * 14 - t * 5)); break;
+        case 'segments': c = at((i - t * 5) / 4); break;
+        case 'twinkle': c = at(i * 7 + Math.floor(t / 2)); a = 0.15 + 0.85 * Math.pow(Math.abs(Math.sin(t * 1.4 + i * 2.17)), 3); break;
+        case 'flash': c = at(i * 3 + Math.floor(t * 5)); a = (Math.floor(t * 5) + i) % 3 === 0 ? 1 : 0.15; break;
+        case 'static': c = at(i); a = 1; break;
+        case 'shift': c = blend(i + t * 0.6); break;
+        case 'mixed': c = (Math.floor(i / 5) % 2) ? at(i / 2 + t * 2) : at(i); a = (Math.floor(i / 5) % 2) ? 1 : 0.2 + 0.8 * Math.abs(Math.sin(t * 2 + i)); break;
+        default: c = at(i); a = 0.9; // no description: real colours, no invented movement
+      }
+      const [R, G, B] = c;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      g.addColorStop(0, `rgba(${R},${G},${B},${0.5 * a})`); g.addColorStop(1, `rgba(${R},${G},${B},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 4, 0, 6.3); ctx.fill();
+      ctx.fillStyle = `rgba(${Math.min(255, R + 40)},${Math.min(255, G + 40)},${Math.min(255, B + 40)},${Math.max(0.12, a)})`;
+      ctx.beginPath(); ctx.ellipse(x, y + 1, r * 0.8, r, 0, 0, 6.3); ctx.fill();
+    }
+  }
+  let last = performance.now(), rafId = 0;
+  function frame(now) {
+    rafId = 0;
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    let any = false;
+    strips.forEach((s) => {
+      if (!s.canvas.isConnected) forget(s.canvas); // re-rendered grid: drop the old canvases
+      else if (s.visible) { draw(s, dt); any = true; }
+    });
+    if (any && !document.hidden) rafId = requestAnimationFrame(frame);
+  }
+  function kick() {
+    if (rafId || document.hidden) return;
+    last = performance.now();
+    rafId = requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', kick);
+
+  // ---------------------------------------------------------------- browser
+  function renderChips() {
+    const box = $('chips'); box.innerHTML = '';
+    ORDER.forEach((k) => {
+      const count = data.effects.filter((e) => e.category === k).length;
+      const b = el('button', 'chip' + (k === tab ? ' on' : ''), (k === 'mine' ? '★ ' : '') + (data.categories[k] || k) + (k === 'mine' && count ? ` · ${count}` : ''));
+      b.onclick = () => { tab = k; renderChips(); renderGrid(); renderPill(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      box.appendChild(b);
+    });
+  }
+  const MOTION = { rainbow: 'Rainbow sweep', gradient: 'Moving gradient', flow: 'Flowing', fade: 'Fades between colours',
+    cycle: 'Steps through colours', breathe: 'Breathing', strobe: 'Strobe flashes', blink: 'Alternating blink',
+    chase: 'Chasing wave', segments: 'Chasing segments', twinkle: 'Twinkling', mixed: 'Mixed patterns',
+    flash: 'Quick colour flashes', static: 'Still colours', shift: 'Each light changes colour' };
+  const patName = (n) => ((data.patterns.find((p) => p.n === n) || {}).name || `Pattern ${n}`);
+  function describe(e) {
+    const how = MOTION[e.motion];
+    if (e.category === 'patterns') return how ? `${how} · rainbow colours` : 'Built-in pattern · preview shows colours only';
+    return `${e.colours.length} colour${e.colours.length === 1 ? '' : 's'} · ${patName(e.pattern)}`;
+  }
+  function renderGrid() {
+    const grid = $('grid'); grid.innerHTML = '';
+    const list = data.effects.filter((e) => e.category === tab);
+    if (!data.patterns.length) {
+      grid.appendChild(el('div', 'empty', 'This device does not support effects.'));
+      return;
+    }
+    if (tab === 'mine') {
+      const c = el('div', 'card create');
+      c.append(el('div', 'plus', '+'), el('div', 'lbl', 'Create effect'));
+      c.onclick = () => openEditor(null);
+      grid.appendChild(c);
+      if (!list.length) grid.appendChild(el('div', 'empty', 'Effects you create here are for this device only. They appear in its Effect picker and in Flows. Tip: tap "Customise" on any effect to start from it.'));
+    }
+    list.forEach((e) => {
+      const card = el('div', 'card' + (playing && playing.id === e.id ? ' playing' : ''));
+      const cv = el('canvas');
+      const info = el('div', 'info'); const title = el('div', 'title');
+      title.append(el('div', 'name', e.name), el('div', 'meta', describe(e)));
+      const edit = el('button', 'edit', e.category === 'mine' ? 'Edit' : 'Customise');
+      edit.onclick = (ev) => { ev.stopPropagation(); openEditor(e); };
+      info.append(title, edit); card.append(cv, info);
+      if (playing && playing.id === e.id) {
+        card.appendChild(el('div', 'badge', 'Playing'));
+        card.appendChild(controls());
+      }
+      card.onclick = () => { if (!(playing && playing.id === e.id)) play(e); };
+      grid.appendChild(card);
+      strip(cv, () => e);
+    });
+  }
+  /** Speed + stop row shown inside the playing card. */
+  let speedTimer;
+  function controls() {
+    const row = el('div', 'controls');
+    row.onclick = (ev) => ev.stopPropagation();
+    const sp = el('div', 'speed');
+    const slow = el('span'); slow.innerHTML = SLOW; slow.title = 'Slow';
+    const fast = el('span'); fast.innerHTML = FAST; fast.title = 'Fast';
+    const input = el('input'); input.type = 'range'; input.className = 'speed-track'; input.min = 1; input.max = 100;
+    input.value = playingSpeed; input.setAttribute('aria-label', 'Speed'); fill(input);
+    const val = el('span', 'speed-val', String(playingSpeed));
+    input.oninput = () => {
+      fill(input); val.textContent = input.value; playingSpeed = Number(input.value);
+      clearTimeout(speedTimer);
+      const e = playing;
+      speedTimer = setTimeout(() => api('POST', '/play', { effect: e.id, speed: playingSpeed, device: target() })
+        .catch((err) => toast(errMsg(err))), 300);
+    };
+    sp.append(slow, input, fast);
+    const stop = el('button', 'stopbtn'); stop.setAttribute('aria-label', 'Stop'); stop.title = 'Stop';
+    stop.onclick = stopPlaying;
+    row.append(sp, val, stop);
+    return row;
+  }
+  function renderPill() {
+    const away = playing && playing.category !== tab;
+    $('pill').classList.toggle('show', !!away);
+    if (away) $('pillName').textContent = playing.name;
+  }
+  function setPlaying(e, spd) {
+    playing = e;
+    if (e) playingSpeed = spd || e.speed || 80;
+    renderPill();
+  }
+  async function stopPlaying() {
+    try { await api('POST', '/play', { stop: true, device: target() }); setPlaying(null); renderGrid(); }
+    catch (err) { toast(errMsg(err)); }
+  }
+  async function play(e) {
+    // Each effect starts at its own speed, like in the Surplife app.
+    const spd = e.speed || 80;
+    try {
+      await api('POST', '/play', { effect: e.id, speed: spd, device: target() });
+      setPlaying(e, spd); renderGrid();
+    } catch (err) { toast(errMsg(err)); }
+  }
+  async function load() {
+    data = await api('GET', deviceId ? `/effects?device=${encodeURIComponent(deviceId)}` : '/effects');
+    deviceId = data.device.id;
+    ORDER = Object.keys(data.categories);
+    if (!ORDER.includes(tab)) tab = ORDER[1] || ORDER[0];
+    // The light (and model) this list belongs to; a picker when there is more than one light.
+    $('devName').textContent = data.device.name;
+    $('devModel').textContent = data.device.model;
+    const d = data.device;
+    setPlaying(d.effect ? data.effects.find((e) => e.id === d.effect) || null : null, d.speed);
+    if (playing && tab !== playing.category) tab = playing.category;
+    renderChips(); renderGrid();
+  }
+
+  // ------------------------------------------------------------- start screen
+  // Each kind of device has its own page here (its "panel"), opened from its card. Devices of the
+  // same kind share a page. A device without a panel is listed but has nothing to open.
+  const PANELS = {
+    effects: { open: (id) => openEffects(id) }, // effect studio: lights with scenes and patterns
+  };
+  const svg = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const ICONS = {
+    light: svg('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>'),
+    socket: svg('<rect x="6" y="9" width="12" height="9" rx="2"/><path d="M10 9V4M14 9V4M12 18v3"/>'),
+    sensor: svg('<circle cx="12" cy="12" r="2"/><path d="M8 8a5.7 5.7 0 0 0 0 8M16 8a5.7 5.7 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>'),
+    other: svg('<rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="12" cy="12" r="3"/>'),
+  };
+  async function showHome() {
+    const list = await api('GET', '/devices');
+    const box = $('lights'); box.innerHTML = '';
+    if (!list.length) box.appendChild(el('div', 'empty', 'No devices yet. Add one in Homey: Devices, +, Homebase.'));
+    list.forEach((d) => {
+      const panel = PANELS[d.panel];
+      const b = el('button', 'light' + (d.available ? '' : ' off') + (panel ? '' : ' none'));
+      const ic = el('span', 'ic'); ic.innerHTML = ICONS[d.class] || ICONS.other;
+      const g = el('span', 'grow');
+      g.append(el('span', 'ln', d.name));
+      if (d.model) g.appendChild(el('span', 'lm', d.model));
+      const status = !d.available ? 'Not reachable' : d.status || (panel ? '' : 'Nothing to set up here');
+      if (status) g.appendChild(el('span', 'ls' + (d.live && d.available ? ' live' : ''), status));
+      b.append(ic, g);
+      if (panel) {
+        b.appendChild(el('span', 'go', '›'));
+        b.onclick = () => panel.open(d.id);
+      } else {
+        b.disabled = true;
+      }
+      box.appendChild(b);
+    });
+    $('studio').hidden = true; $('home').hidden = false; $('pill').classList.remove('show');
+    window.scrollTo(0, 0);
+  }
+  async function openEffects(id) {
+    deviceId = id; setPlaying(null); tab = 'festival';
+    try {
+      await load();
+      $('home').hidden = true; $('studio').hidden = false; renderPill();
+      window.scrollTo(0, 0);
+    } catch (e) { toast(errMsg(e)); }
+  }
+
+  // ----------------------------------------------------------------- editor
+  function openEditor(e) {
+    const mine = e && e.category === 'mine';
+    ed = {
+      id: mine ? e.id.slice(2) : undefined,
+      name: mine ? e.name : (e ? `My ${e.name}` : ''),
+      pattern: e ? e.pattern : data.patterns[0].n,
+      speed: e ? e.speed : 70,
+      colours: e ? e.colours.filter((c) => (c.v ?? 100) > 0).slice(0, 8).map((c) => ({ h: Math.round(c.h), s: Math.round(c.s) })) : [{ h: 0, s: 100 }, { h: 35, s: 30 }],
+      motion: e ? e.motion : (data.patterns[0] || {}).motion,
+      live: true, dirty: false,
+    };
+    selected = -1;
+    $('edTitle').textContent = mine ? 'Edit effect' : 'New effect';
+    $('edName').value = ed.name;
+    $('edSpeed').value = ed.speed; fill($('edSpeed'));
+    $('edDelete').style.display = mine ? 'block' : 'none';
+    $('edLive').classList.toggle('on', ed.live);
+    renderPatterns(); renderPicked(); renderPalette(); validate();
+    $('sheet').classList.add('open'); $('sheet').scrollTop = 0;
+    strip($('edStrip'), () => ed);
+    livePreview();
+  }
+  function closeEditor() { $('sheet').classList.remove('open'); ed = null; }
+  function validate() { $('edSave').disabled = !ed || !$('edName').value.trim() || ed.colours.length === 0; }
+  function renderPicked() {
+    const box = $('edPicked'); box.innerHTML = '';
+    ed.colours.forEach((c, i) => {
+      const d = el('button', 'dot' + (i === selected ? ' sel' : '')); d.style.background = css(c); d.setAttribute('aria-label', 'Colour ' + (i + 1));
+      d.onclick = () => { selected = selected === i ? -1 : i; renderPicked(); };
+      if (i === selected) {
+        const rm = el('span', 'rm', '×');
+        rm.onclick = (ev) => { ev.stopPropagation(); ed.colours.splice(i, 1); selected = -1; changed(); renderPicked(); };
+        d.appendChild(rm);
+      }
+      box.appendChild(d);
+    });
+    $('edCount').textContent = `· ${ed.colours.length}/8`;
+    $('edTune').style.display = selected >= 0 ? 'flex' : 'none';
+    if (selected >= 0) $('edHue').value = ed.colours[selected].h;
+    $('edHint').textContent = selected >= 0
+      ? 'Drag the hue slider to fine-tune, tap × to remove, or tap a colour below to replace it.'
+      : (ed.colours.length >= 8 ? 'Maximum 8 colours. Tap a chosen colour to change or remove it.' : 'Tap a colour below to add it. Tap a chosen colour to fine-tune or remove it.');
+    validate();
+  }
+  function renderPalette() {
+    const box = $('edPalette'); box.innerHTML = '';
+    PRESETS.forEach(([name, h, s]) => {
+      const b = el('button', 'pal'); b.style.background = css({ h, s }); b.title = name; b.setAttribute('aria-label', name);
+      b.onclick = () => {
+        if (selected >= 0) ed.colours[selected] = { h, s };
+        else if (ed.colours.length < 8) ed.colours.push({ h, s });
+        else { toast('Maximum 8 colours'); return; }
+        changed(); renderPicked();
+      };
+      box.appendChild(b);
+    });
+  }
+  function renderPatterns() {
+    const box = $('edPatterns'); box.innerHTML = '';
+    data.patterns.forEach((p) => {
+      const b = el('button', 'pat' + (p.n === ed.pattern ? ' on' : ''), String(p.n));
+      b.onclick = () => { ed.pattern = p.n; ed.motion = p.motion; changed(); renderPatterns(); };
+      box.appendChild(b);
+      if (p.n === ed.pattern) setTimeout(() => b.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
+    });
+    const cur = data.patterns.find((p) => p.n === ed.pattern);
+    $('edPatName').textContent = cur ? cur.name : '';
+  }
+  function changed() { ed.dirty = true; validate(); livePreview(); }
+  function livePreview() {
+    if (!ed || !ed.live) return;
+    clearTimeout(livePreview.t);
+    livePreview.t = setTimeout(async () => {
+      if (!ed || !ed.colours.length) return;
+      try { await api('POST', '/play', { custom: { pattern: ed.pattern, speed: ed.speed, colours: ed.colours }, device: target() }); }
+      catch (err) { toast(errMsg(err)); }
+    }, 450);
+  }
+  async function save() {
+    try {
+      const saved = await api('POST', '/effects', { device: target(), id: ed.id, name: $('edName').value, pattern: ed.pattern, speed: ed.speed, colours: ed.colours });
+      toast(`Saved “${saved.name}”`);
+      closeEditor(); tab = 'mine'; await load();
+      const entry = data.effects.find((x) => x.id === `c:${saved.id}`);
+      if (entry) await play(entry);
+    } catch (err) { toast(errMsg(err)); }
+  }
+
+  // ------------------------------------------------------------------ theme
+  // Homey passes no theme class or colours to settings pages (checked 2026-11-04). Its theme does
+  // reach the page through prefers-color-scheme, but inverted: observed by the user in the Homey
+  // app, where switching Homey between light and dark flipped the page the other way. So "Auto"
+  // uses the inverted value; Light/Dark override it. Stored in the app settings for all devices.
+  const THEME_KEY = 'studioTheme';
+  const DARK_QUERY = matchMedia('(prefers-color-scheme: dark)');
+  let themePref = 'auto';
+  function applyTheme() {
+    const t = themePref === 'auto' ? (DARK_QUERY.matches ? 'light' : 'dark') : themePref;
+    $('sl').setAttribute('data-theme', t);
+    document.documentElement.style.background = document.body.style.background = t === 'dark' ? '#0d0e13' : '#f4f4f7';
+    document.querySelectorAll('#theme button').forEach((b) => b.classList.toggle('on', b.dataset.v === themePref));
+  }
+  function watchTheme() {
+    try { const v = localStorage.getItem(THEME_KEY); if (v === 'light' || v === 'dark' || v === 'auto') themePref = v; } catch (e) { /* storage unavailable */ }
+    applyTheme();
+    DARK_QUERY.addEventListener('change', applyTheme);
+    H.get(THEME_KEY, (err, v) => { if (!err && ['auto', 'light', 'dark'].includes(v) && v !== themePref) { themePref = v; applyTheme(); } });
+    document.querySelectorAll('#theme button').forEach((b) => {
+      b.onclick = () => {
+        themePref = b.dataset.v; applyTheme();
+        try { localStorage.setItem(THEME_KEY, themePref); } catch (e) { /* storage unavailable */ }
+        H.set(THEME_KEY, themePref, () => {});
+      };
+    });
+  }
+
+  // ------------------------------------------------------------------- wire
+  window.onHomeyReady = function (Homey) {
+    H = Homey;
+    watchTheme();
+    $('pillStop').onclick = stopPlaying;
+    $('toDevices').onclick = () => showHome().catch((e) => toast(errMsg(e)));
+    $('pillShow').onclick = () => { if (!playing) return; tab = playing.category; renderChips(); renderGrid(); renderPill();
+      window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    $('edBack').onclick = closeEditor;
+    $('edSave').onclick = save;
+    $('edName').oninput = validate;
+    $('edSpeed').oninput = () => { ed.speed = Number($('edSpeed').value); fill($('edSpeed')); changed(); };
+    $('edHue').oninput = () => { if (selected >= 0) { ed.colours[selected] = { h: Number($('edHue').value), s: Math.max(60, ed.colours[selected].s) }; changed(); renderPicked(); } };
+    $('edLive').onclick = () => { ed.live = !ed.live; $('edLive').classList.toggle('on', ed.live); if (ed.live) livePreview(); };
+    $('edDelete').onclick = () => {
+      if (!ed || !ed.id) return;
+      H.confirm(`Delete “${ed.name}”?`, 'warning', async (err, yes) => {
+        if (err || !yes) return;
+        try { await api('DELETE', `/effects/${ed.id}?device=${encodeURIComponent(target())}`); toast('Deleted'); closeEditor(); await load(); }
+        catch (e) { toast(errMsg(e)); }
+      });
+    };
+    showHome().then(() => H.ready()).catch((e) => { H.ready(); toast(errMsg(e)); });
+  };
+})();
+</script>
+</body>
+</html>

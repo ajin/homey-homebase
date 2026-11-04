@@ -1,0 +1,5 @@
+test/
+tools/
+docs/
+build-test/
+tsconfig*.json

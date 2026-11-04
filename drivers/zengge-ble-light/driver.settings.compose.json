@@ -1,0 +1,257 @@
+[
+  {
+    "type": "group",
+    "label": {
+      "en": "Connection"
+    },
+    "children": [
+      {
+        "id": "command_profile",
+        "type": "dropdown",
+        "value": "auto",
+        "label": {
+          "en": "Command set"
+        },
+        "hint": {
+          "en": "Which Zengge command family to send. 'Automatic' picks one from the product id the controller advertises. Change this only if the lights do not react."
+        },
+        "values": [
+          {
+            "id": "auto",
+            "label": {
+              "en": "Automatic (from product id)"
+            }
+          },
+          {
+            "id": "zengge_v2_e1",
+            "label": {
+              "en": "Zengge unified + symphony effects (0x3B / E1 21)"
+            }
+          },
+          {
+            "id": "zengge_v2",
+            "label": {
+              "en": "Zengge unified (0x3B)"
+            }
+          },
+          {
+            "id": "symphony_v3",
+            "label": {
+              "en": "Symphony v3 (0xE0)"
+            }
+          },
+          {
+            "id": "zengge_legacy",
+            "label": {
+              "en": "Zengge legacy (0x71 / 0x31)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "max_packet",
+        "type": "dropdown",
+        "value": "255",
+        "label": {
+          "en": "Maximum BLE packet size"
+        },
+        "hint": {
+          "en": "255 matches the Surplife app. Choose 20 if commands are ignored; longer commands are then split into protocol segments."
+        },
+        "values": [
+          {
+            "id": "255",
+            "label": {
+              "en": "255 bytes (app default)"
+            }
+          },
+          {
+            "id": "20",
+            "label": {
+              "en": "20 bytes (minimum MTU)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "idle_disconnect",
+        "type": "number",
+        "value": 120,
+        "min": 0,
+        "max": 3600,
+        "units": {
+          "en": "s"
+        },
+        "label": {
+          "en": "Disconnect after idle"
+        },
+        "hint": {
+          "en": "Release the Bluetooth link after this many seconds without commands, so the Surplife phone app can still connect. 0 keeps the link open."
+        }
+      },
+      {
+        "id": "min_write_gap",
+        "type": "number",
+        "value": 60,
+        "min": 20,
+        "max": 1000,
+        "units": {
+          "en": "ms"
+        },
+        "label": {
+          "en": "Minimum gap between writes"
+        }
+      },
+      {
+        "id": "colour_correction",
+        "type": "checkbox",
+        "value": true,
+        "label": {
+          "en": "Colour correction"
+        },
+        "hint": {
+          "en": "Compensates for the strong green LEDs so orange and yellow look right. Calibrated on the Quntis 204-LED string. Turn off to send standard colour-wheel hues."
+        }
+      },
+      {
+        "id": "brightness_curve",
+        "type": "dropdown",
+        "value": "perceptual",
+        "label": {
+          "en": "Brightness curve"
+        },
+        "hint": {
+          "en": "Perceptual makes each step of the dim slider look like an even step (50 % looks half as bright). Linear sends the slider value to the controller as is."
+        },
+        "values": [
+          {
+            "id": "perceptual",
+            "label": {
+              "en": "Perceptual"
+            }
+          },
+          {
+            "id": "linear",
+            "label": {
+              "en": "Linear"
+            }
+          }
+        ]
+      },
+      {
+        "id": "restore_on_reconnect",
+        "type": "checkbox",
+        "value": false,
+        "label": {
+          "en": "Restore last state after an unexpected reconnect"
+        }
+      },
+      {
+        "id": "debug_logging",
+        "type": "checkbox",
+        "value": false,
+        "label": {
+          "en": "Diagnostic logging"
+        },
+        "hint": {
+          "en": "Log every frame written and received (hex) to the app log."
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Remote controls"
+    },
+    "children": [
+      {
+        "id": "remote_control",
+        "type": "dropdown",
+        "value": "open",
+        "label": {
+          "en": "Remotes that can control this light"
+        },
+        "hint": {
+          "en": "Same as the Surplife app's Remote Control Settings, stored in the light itself. Covers Bluetooth (radio) remotes and control panels only: infrared remotes and phones are not affected. When the light is removed from Homey, this is set back to 'All remotes' and paired remotes are unpaired."
+        },
+        "values": [
+          {
+            "id": "open",
+            "label": {
+              "en": "All remotes (factory setting)"
+            }
+          },
+          {
+            "id": "paired_only",
+            "label": {
+              "en": "Only remotes paired with this light"
+            }
+          },
+          {
+            "id": "disabled",
+            "label": {
+              "en": "No remotes"
+            }
+          }
+        ]
+      },
+      {
+        "id": "info_remotes",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "Paired remotes"
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Controller information (read-only)"
+    },
+    "children": [
+      {
+        "id": "info_mac",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "MAC address"
+        }
+      },
+      {
+        "id": "info_product",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "Product id"
+        }
+      },
+      {
+        "id": "info_versions",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "BLE / firmware / LED version"
+        }
+      },
+      {
+        "id": "info_profile",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "Active command set"
+        }
+      },
+      {
+        "id": "info_last_state",
+        "type": "label",
+        "value": "",
+        "label": {
+          "en": "Last state bytes"
+        }
+      }
+    ]
+  }
+]

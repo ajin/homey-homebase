@@ -1,0 +1,1038 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.rxd7.homebase",
+  "version": "0.2.0",
+  "compatibility": ">=12.0.0",
+  "platforms": [
+    "local"
+  ],
+  "sdk": 3,
+  "brandColor": "#4F46E5",
+  "name": {
+    "en": "Homebase"
+  },
+  "description": {
+    "en": "Control your devices locally from Homey, without the cloud."
+  },
+  "category": [
+    "lights"
+  ],
+  "tags": {
+    "en": [
+      "local",
+      "surplife",
+      "zengge",
+      "quntis",
+      "ble",
+      "bluetooth",
+      "christmas lights",
+      "led"
+    ]
+  },
+  "permissions": [
+    "homey:wireless:ble"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "rxd7"
+  },
+  "api": {
+    "scan": {
+      "method": "GET",
+      "path": "/diagnostics/scan"
+    },
+    "listDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "listEffects": {
+      "method": "GET",
+      "path": "/effects"
+    },
+    "saveEffect": {
+      "method": "POST",
+      "path": "/effects"
+    },
+    "deleteEffect": {
+      "method": "DELETE",
+      "path": "/effects/:id"
+    },
+    "play": {
+      "method": "POST",
+      "path": "/play"
+    }
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "effect_changed",
+        "title": {
+          "en": "Effect changed"
+        },
+        "hint": {
+          "en": "Also fires when the effect is changed with the handheld remote or the phone app (while Homey is connected)."
+        },
+        "tokens": [
+          {
+            "name": "effect",
+            "type": "number",
+            "title": {
+              "en": "Pattern number (0 = static colour)"
+            },
+            "example": 5
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "title": {
+              "en": "Effect name"
+            },
+            "example": "Christmas 1"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      },
+      {
+        "id": "connection_lost",
+        "title": {
+          "en": "Bluetooth connection was lost unexpectedly"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      },
+      {
+        "id": "connection_restored",
+        "title": {
+          "en": "Bluetooth connection was restored"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      },
+      {
+        "id": "notification_received",
+        "title": {
+          "en": "Controller sent a message"
+        },
+        "hint": {
+          "en": "Diagnostic: fires for every decoded notification from the controller."
+        },
+        "tokens": [
+          {
+            "name": "opcode",
+            "type": "number",
+            "title": {
+              "en": "Opcode"
+            },
+            "example": 22
+          },
+          {
+            "name": "hex",
+            "type": "string",
+            "title": {
+              "en": "Payload (hex)"
+            },
+            "example": "8133..."
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "is_connected",
+        "title": {
+          "en": "Bluetooth link !{{is|is not}} open"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "run_named_effect",
+        "title": {
+          "en": "Run effect"
+        },
+        "titleFormatted": {
+          "en": "Run effect [[effect]] at speed [[speed]]%"
+        },
+        "hint": {
+          "en": "Any effect from the library: named effects, the controller's patterns and your own effects from the app settings."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          },
+          {
+            "name": "effect",
+            "type": "autocomplete",
+            "placeholder": {
+              "en": "Search effects"
+            }
+          },
+          {
+            "name": "speed",
+            "type": "range",
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "value": 80,
+            "labelDecimals": 0
+          }
+        ]
+      },
+      {
+        "id": "run_effect",
+        "title": {
+          "en": "Run built-in effect"
+        },
+        "titleFormatted": {
+          "en": "Run built-in effect [[effect]] at speed [[speed]]%"
+        },
+        "hint": {
+          "en": "The controller's own effects, the same ones the handheld remote cycles through: 1-11, 13-22 and 25-37."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          },
+          {
+            "name": "effect",
+            "type": "number",
+            "min": 1,
+            "max": 37,
+            "step": 1,
+            "placeholder": {
+              "en": "1-37"
+            }
+          },
+          {
+            "name": "speed",
+            "type": "range",
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "value": 50,
+            "labelDecimals": 0
+          }
+        ]
+      },
+      {
+        "id": "query_state",
+        "title": {
+          "en": "Ask the controller for its state"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      },
+      {
+        "id": "unpair_remotes",
+        "title": {
+          "en": "Unpair all remotes"
+        },
+        "hint": {
+          "en": "Removes every Bluetooth (radio) remote paired with this light. Infrared remotes are not affected."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      },
+      {
+        "id": "send_raw",
+        "title": {
+          "en": "Send raw command (advanced)"
+        },
+        "titleFormatted": {
+          "en": "Send opcode [[opcode]] payload [[hex]] [[checksum]]"
+        },
+        "hint": {
+          "en": "Diagnostic: sends an arbitrary payload through the Zengge transport. Use only for reverse-engineering."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          },
+          {
+            "name": "opcode",
+            "type": "number",
+            "min": 0,
+            "max": 255,
+            "step": 1,
+            "placeholder": {
+              "en": "11"
+            }
+          },
+          {
+            "name": "hex",
+            "type": "text",
+            "placeholder": {
+              "en": "3b 23 00 00 00 00 00 00 00 00 00 00"
+            }
+          },
+          {
+            "name": "checksum",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "append",
+                "label": {
+                  "en": "and append checksum"
+                }
+              },
+              {
+                "id": "none",
+                "label": {
+                  "en": "as-is"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "Surplife Bluetooth Light"
+      },
+      "class": "light",
+      "capabilities": [
+        "onoff",
+        "dim",
+        "light_hue",
+        "light_saturation",
+        "light_temperature",
+        "light_mode",
+        "lighting_effect",
+        "lighting_effect_speed"
+      ],
+      "capabilitiesOptions": {
+        "dim": {
+          "opts": {
+            "duration": false
+          }
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "ble"
+      ],
+      "images": {
+        "small": "/drivers/zengge-ble-light/assets/images/small.png",
+        "large": "/drivers/zengge-ble-light/assets/images/large.png",
+        "xlarge": "/drivers/zengge-ble-light/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "id": "zengge-ble-light",
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection"
+          },
+          "children": [
+            {
+              "id": "command_profile",
+              "type": "dropdown",
+              "value": "auto",
+              "label": {
+                "en": "Command set"
+              },
+              "hint": {
+                "en": "Which Zengge command family to send. 'Automatic' picks one from the product id the controller advertises. Change this only if the lights do not react."
+              },
+              "values": [
+                {
+                  "id": "auto",
+                  "label": {
+                    "en": "Automatic (from product id)"
+                  }
+                },
+                {
+                  "id": "zengge_v2_e1",
+                  "label": {
+                    "en": "Zengge unified + symphony effects (0x3B / E1 21)"
+                  }
+                },
+                {
+                  "id": "zengge_v2",
+                  "label": {
+                    "en": "Zengge unified (0x3B)"
+                  }
+                },
+                {
+                  "id": "symphony_v3",
+                  "label": {
+                    "en": "Symphony v3 (0xE0)"
+                  }
+                },
+                {
+                  "id": "zengge_legacy",
+                  "label": {
+                    "en": "Zengge legacy (0x71 / 0x31)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "max_packet",
+              "type": "dropdown",
+              "value": "255",
+              "label": {
+                "en": "Maximum BLE packet size"
+              },
+              "hint": {
+                "en": "255 matches the Surplife app. Choose 20 if commands are ignored; longer commands are then split into protocol segments."
+              },
+              "values": [
+                {
+                  "id": "255",
+                  "label": {
+                    "en": "255 bytes (app default)"
+                  }
+                },
+                {
+                  "id": "20",
+                  "label": {
+                    "en": "20 bytes (minimum MTU)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "idle_disconnect",
+              "type": "number",
+              "value": 120,
+              "min": 0,
+              "max": 3600,
+              "units": {
+                "en": "s"
+              },
+              "label": {
+                "en": "Disconnect after idle"
+              },
+              "hint": {
+                "en": "Release the Bluetooth link after this many seconds without commands, so the Surplife phone app can still connect. 0 keeps the link open."
+              }
+            },
+            {
+              "id": "min_write_gap",
+              "type": "number",
+              "value": 60,
+              "min": 20,
+              "max": 1000,
+              "units": {
+                "en": "ms"
+              },
+              "label": {
+                "en": "Minimum gap between writes"
+              }
+            },
+            {
+              "id": "colour_correction",
+              "type": "checkbox",
+              "value": true,
+              "label": {
+                "en": "Colour correction"
+              },
+              "hint": {
+                "en": "Compensates for the strong green LEDs so orange and yellow look right. Calibrated on the Quntis 204-LED string. Turn off to send standard colour-wheel hues."
+              }
+            },
+            {
+              "id": "brightness_curve",
+              "type": "dropdown",
+              "value": "perceptual",
+              "label": {
+                "en": "Brightness curve"
+              },
+              "hint": {
+                "en": "Perceptual makes each step of the dim slider look like an even step (50 % looks half as bright). Linear sends the slider value to the controller as is."
+              },
+              "values": [
+                {
+                  "id": "perceptual",
+                  "label": {
+                    "en": "Perceptual"
+                  }
+                },
+                {
+                  "id": "linear",
+                  "label": {
+                    "en": "Linear"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "restore_on_reconnect",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Restore last state after an unexpected reconnect"
+              }
+            },
+            {
+              "id": "debug_logging",
+              "type": "checkbox",
+              "value": false,
+              "label": {
+                "en": "Diagnostic logging"
+              },
+              "hint": {
+                "en": "Log every frame written and received (hex) to the app log."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Remote controls"
+          },
+          "children": [
+            {
+              "id": "remote_control",
+              "type": "dropdown",
+              "value": "open",
+              "label": {
+                "en": "Remotes that can control this light"
+              },
+              "hint": {
+                "en": "Same as the Surplife app's Remote Control Settings, stored in the light itself. Covers Bluetooth (radio) remotes and control panels only: infrared remotes and phones are not affected. When the light is removed from Homey, this is set back to 'All remotes' and paired remotes are unpaired."
+              },
+              "values": [
+                {
+                  "id": "open",
+                  "label": {
+                    "en": "All remotes (factory setting)"
+                  }
+                },
+                {
+                  "id": "paired_only",
+                  "label": {
+                    "en": "Only remotes paired with this light"
+                  }
+                },
+                {
+                  "id": "disabled",
+                  "label": {
+                    "en": "No remotes"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "info_remotes",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "Paired remotes"
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Controller information (read-only)"
+          },
+          "children": [
+            {
+              "id": "info_mac",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "MAC address"
+              }
+            },
+            {
+              "id": "info_product",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "Product id"
+              }
+            },
+            {
+              "id": "info_versions",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "BLE / firmware / LED version"
+              }
+            },
+            {
+              "id": "info_profile",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "Active command set"
+              }
+            },
+            {
+              "id": "info_last_state",
+              "type": "label",
+              "value": "",
+              "label": {
+                "en": "Last state bytes"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "lighting_effect": {
+      "type": "enum",
+      "title": {
+        "en": "Effect"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "values": [
+        {
+          "id": "static",
+          "title": {
+            "en": "Static colour"
+          }
+        },
+        {
+          "id": "n:christmas1",
+          "title": {
+            "en": "Christmas 1"
+          }
+        },
+        {
+          "id": "n:christmas2",
+          "title": {
+            "en": "Christmas 2"
+          }
+        },
+        {
+          "id": "n:christmas3",
+          "title": {
+            "en": "Christmas 3"
+          }
+        },
+        {
+          "id": "n:candy_cane",
+          "title": {
+            "en": "Candy cane"
+          }
+        },
+        {
+          "id": "n:new_year",
+          "title": {
+            "en": "New Year"
+          }
+        },
+        {
+          "id": "n:halloween1",
+          "title": {
+            "en": "Halloween 1"
+          }
+        },
+        {
+          "id": "n:halloween2",
+          "title": {
+            "en": "Halloween 2"
+          }
+        },
+        {
+          "id": "n:halloween3",
+          "title": {
+            "en": "Halloween 3"
+          }
+        },
+        {
+          "id": "n:valentine",
+          "title": {
+            "en": "Valentine's Day"
+          }
+        },
+        {
+          "id": "n:thanksgiving",
+          "title": {
+            "en": "Thanksgiving"
+          }
+        },
+        {
+          "id": "n:easter",
+          "title": {
+            "en": "Easter"
+          }
+        },
+        {
+          "id": "n:easter_eggs",
+          "title": {
+            "en": "Easter eggs"
+          }
+        },
+        {
+          "id": "n:birthday",
+          "title": {
+            "en": "Birthday"
+          }
+        },
+        {
+          "id": "n:st_patrick",
+          "title": {
+            "en": "St. Patrick's Day"
+          }
+        },
+        {
+          "id": "n:fireworks",
+          "title": {
+            "en": "Fireworks festival"
+          }
+        },
+        {
+          "id": "n:fantasy_fireworks",
+          "title": {
+            "en": "Fantasy fireworks"
+          }
+        },
+        {
+          "id": "n:meteor_shower",
+          "title": {
+            "en": "Meteor shower"
+          }
+        },
+        {
+          "id": "n:moonlight",
+          "title": {
+            "en": "Moonlight"
+          }
+        },
+        {
+          "id": "n:summer_wind",
+          "title": {
+            "en": "Summer wind"
+          }
+        },
+        {
+          "id": "n:forest_day",
+          "title": {
+            "en": "Forest day"
+          }
+        },
+        {
+          "id": "n:champagne",
+          "title": {
+            "en": "Champagne party"
+          }
+        },
+        {
+          "id": "n:movie_night",
+          "title": {
+            "en": "Movie night"
+          }
+        },
+        {
+          "id": "n:rainbow_water",
+          "title": {
+            "en": "Rainbow water"
+          }
+        },
+        {
+          "id": "n:rainbow_cycle",
+          "title": {
+            "en": "Rainbow cycle"
+          }
+        },
+        {
+          "id": "n:rainbow_smooth",
+          "title": {
+            "en": "Rainbow smooth"
+          }
+        },
+        {
+          "id": "p:1",
+          "title": {
+            "en": "Colour fade (1)"
+          }
+        },
+        {
+          "id": "p:2",
+          "title": {
+            "en": "Colour shift (2)"
+          }
+        },
+        {
+          "id": "p:3",
+          "title": {
+            "en": "Pattern 3"
+          }
+        },
+        {
+          "id": "p:4",
+          "title": {
+            "en": "Strobe (4)"
+          }
+        },
+        {
+          "id": "p:5",
+          "title": {
+            "en": "Pattern 5"
+          }
+        },
+        {
+          "id": "p:6",
+          "title": {
+            "en": "Pattern 6"
+          }
+        },
+        {
+          "id": "p:7",
+          "title": {
+            "en": "Water flow (7)"
+          }
+        },
+        {
+          "id": "p:8",
+          "title": {
+            "en": "Pattern 8"
+          }
+        },
+        {
+          "id": "p:9",
+          "title": {
+            "en": "Pattern 9"
+          }
+        },
+        {
+          "id": "p:10",
+          "title": {
+            "en": "Alternating blink (10)"
+          }
+        },
+        {
+          "id": "p:11",
+          "title": {
+            "en": "Breathe (11)"
+          }
+        },
+        {
+          "id": "p:13",
+          "title": {
+            "en": "Colour flash (13)"
+          }
+        },
+        {
+          "id": "p:14",
+          "title": {
+            "en": "Wave (14)"
+          }
+        },
+        {
+          "id": "p:15",
+          "title": {
+            "en": "Twinkle (15)"
+          }
+        },
+        {
+          "id": "p:16",
+          "title": {
+            "en": "Pattern 16"
+          }
+        },
+        {
+          "id": "p:17",
+          "title": {
+            "en": "Alternating strobe (17)"
+          }
+        },
+        {
+          "id": "p:18",
+          "title": {
+            "en": "Pattern 18"
+          }
+        },
+        {
+          "id": "p:19",
+          "title": {
+            "en": "Two-colour fade (19)"
+          }
+        },
+        {
+          "id": "p:20",
+          "title": {
+            "en": "Static colours (20)"
+          }
+        },
+        {
+          "id": "p:21",
+          "title": {
+            "en": "Pattern 21"
+          }
+        },
+        {
+          "id": "p:22",
+          "title": {
+            "en": "Smooth rainbow (22)"
+          }
+        },
+        {
+          "id": "p:25",
+          "title": {
+            "en": "Colour chase (25)"
+          }
+        },
+        {
+          "id": "p:26",
+          "title": {
+            "en": "Two-colour pulse (26)"
+          }
+        },
+        {
+          "id": "p:27",
+          "title": {
+            "en": "Pattern 27"
+          }
+        },
+        {
+          "id": "p:28",
+          "title": {
+            "en": "Two-colour swap (28)"
+          }
+        },
+        {
+          "id": "p:29",
+          "title": {
+            "en": "Gradient shift (29)"
+          }
+        },
+        {
+          "id": "p:30",
+          "title": {
+            "en": "Pattern 30"
+          }
+        },
+        {
+          "id": "p:31",
+          "title": {
+            "en": "Pattern 31"
+          }
+        },
+        {
+          "id": "p:32",
+          "title": {
+            "en": "Smooth transition (32)"
+          }
+        },
+        {
+          "id": "p:33",
+          "title": {
+            "en": "Segment flow (33)"
+          }
+        },
+        {
+          "id": "p:34",
+          "title": {
+            "en": "Async breathing (34)"
+          }
+        },
+        {
+          "id": "p:35",
+          "title": {
+            "en": "Pattern 35"
+          }
+        },
+        {
+          "id": "p:36",
+          "title": {
+            "en": "Pattern 36"
+          }
+        },
+        {
+          "id": "p:37",
+          "title": {
+            "en": "Rainbow chase (37)"
+          }
+        }
+      ],
+      "insights": false
+    },
+    "lighting_effect_speed": {
+      "type": "number",
+      "title": {
+        "en": "Effect speed"
+      },
+      "getable": true,
+      "setable": true,
+      "min": 0.01,
+      "max": 1,
+      "step": 0.01,
+      "decimals": 2,
+      "units": {
+        "en": "%"
+      },
+      "uiComponent": "slider",
+      "insights": false
+    }
+  }
+}

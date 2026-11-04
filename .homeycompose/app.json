@@ -1,0 +1,68 @@
+{
+  "id": "com.rxd7.homebase",
+  "version": "0.2.0",
+  "compatibility": ">=12.0.0",
+  "platforms": [
+    "local"
+  ],
+  "sdk": 3,
+  "brandColor": "#4F46E5",
+  "name": {
+    "en": "Homebase"
+  },
+  "description": {
+    "en": "Control your devices locally from Homey, without the cloud."
+  },
+  "category": [
+    "lights"
+  ],
+  "tags": {
+    "en": [
+      "local",
+      "surplife",
+      "zengge",
+      "quntis",
+      "ble",
+      "bluetooth",
+      "christmas lights",
+      "led"
+    ]
+  },
+  "permissions": [
+    "homey:wireless:ble"
+  ],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "rxd7"
+  },
+  "api": {
+    "scan": {
+      "method": "GET",
+      "path": "/diagnostics/scan"
+    },
+    "listDevices": {
+      "method": "GET",
+      "path": "/devices"
+    },
+    "listEffects": {
+      "method": "GET",
+      "path": "/effects"
+    },
+    "saveEffect": {
+      "method": "POST",
+      "path": "/effects"
+    },
+    "deleteEffect": {
+      "method": "DELETE",
+      "path": "/effects/:id"
+    },
+    "play": {
+      "method": "POST",
+      "path": "/play"
+    }
+  }
+}

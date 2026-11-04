@@ -1,0 +1,372 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Effect"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "values": [
+    {
+      "id": "static",
+      "title": {
+        "en": "Static colour"
+      }
+    },
+    {
+      "id": "n:christmas1",
+      "title": {
+        "en": "Christmas 1"
+      }
+    },
+    {
+      "id": "n:christmas2",
+      "title": {
+        "en": "Christmas 2"
+      }
+    },
+    {
+      "id": "n:christmas3",
+      "title": {
+        "en": "Christmas 3"
+      }
+    },
+    {
+      "id": "n:candy_cane",
+      "title": {
+        "en": "Candy cane"
+      }
+    },
+    {
+      "id": "n:new_year",
+      "title": {
+        "en": "New Year"
+      }
+    },
+    {
+      "id": "n:halloween1",
+      "title": {
+        "en": "Halloween 1"
+      }
+    },
+    {
+      "id": "n:halloween2",
+      "title": {
+        "en": "Halloween 2"
+      }
+    },
+    {
+      "id": "n:halloween3",
+      "title": {
+        "en": "Halloween 3"
+      }
+    },
+    {
+      "id": "n:valentine",
+      "title": {
+        "en": "Valentine's Day"
+      }
+    },
+    {
+      "id": "n:thanksgiving",
+      "title": {
+        "en": "Thanksgiving"
+      }
+    },
+    {
+      "id": "n:easter",
+      "title": {
+        "en": "Easter"
+      }
+    },
+    {
+      "id": "n:easter_eggs",
+      "title": {
+        "en": "Easter eggs"
+      }
+    },
+    {
+      "id": "n:birthday",
+      "title": {
+        "en": "Birthday"
+      }
+    },
+    {
+      "id": "n:st_patrick",
+      "title": {
+        "en": "St. Patrick's Day"
+      }
+    },
+    {
+      "id": "n:fireworks",
+      "title": {
+        "en": "Fireworks festival"
+      }
+    },
+    {
+      "id": "n:fantasy_fireworks",
+      "title": {
+        "en": "Fantasy fireworks"
+      }
+    },
+    {
+      "id": "n:meteor_shower",
+      "title": {
+        "en": "Meteor shower"
+      }
+    },
+    {
+      "id": "n:moonlight",
+      "title": {
+        "en": "Moonlight"
+      }
+    },
+    {
+      "id": "n:summer_wind",
+      "title": {
+        "en": "Summer wind"
+      }
+    },
+    {
+      "id": "n:forest_day",
+      "title": {
+        "en": "Forest day"
+      }
+    },
+    {
+      "id": "n:champagne",
+      "title": {
+        "en": "Champagne party"
+      }
+    },
+    {
+      "id": "n:movie_night",
+      "title": {
+        "en": "Movie night"
+      }
+    },
+    {
+      "id": "n:rainbow_water",
+      "title": {
+        "en": "Rainbow water"
+      }
+    },
+    {
+      "id": "n:rainbow_cycle",
+      "title": {
+        "en": "Rainbow cycle"
+      }
+    },
+    {
+      "id": "n:rainbow_smooth",
+      "title": {
+        "en": "Rainbow smooth"
+      }
+    },
+    {
+      "id": "p:1",
+      "title": {
+        "en": "Colour fade (1)"
+      }
+    },
+    {
+      "id": "p:2",
+      "title": {
+        "en": "Colour shift (2)"
+      }
+    },
+    {
+      "id": "p:3",
+      "title": {
+        "en": "Pattern 3"
+      }
+    },
+    {
+      "id": "p:4",
+      "title": {
+        "en": "Strobe (4)"
+      }
+    },
+    {
+      "id": "p:5",
+      "title": {
+        "en": "Pattern 5"
+      }
+    },
+    {
+      "id": "p:6",
+      "title": {
+        "en": "Pattern 6"
+      }
+    },
+    {
+      "id": "p:7",
+      "title": {
+        "en": "Water flow (7)"
+      }
+    },
+    {
+      "id": "p:8",
+      "title": {
+        "en": "Pattern 8"
+      }
+    },
+    {
+      "id": "p:9",
+      "title": {
+        "en": "Pattern 9"
+      }
+    },
+    {
+      "id": "p:10",
+      "title": {
+        "en": "Alternating blink (10)"
+      }
+    },
+    {
+      "id": "p:11",
+      "title": {
+        "en": "Breathe (11)"
+      }
+    },
+    {
+      "id": "p:13",
+      "title": {
+        "en": "Colour flash (13)"
+      }
+    },
+    {
+      "id": "p:14",
+      "title": {
+        "en": "Wave (14)"
+      }
+    },
+    {
+      "id": "p:15",
+      "title": {
+        "en": "Twinkle (15)"
+      }
+    },
+    {
+      "id": "p:16",
+      "title": {
+        "en": "Pattern 16"
+      }
+    },
+    {
+      "id": "p:17",
+      "title": {
+        "en": "Alternating strobe (17)"
+      }
+    },
+    {
+      "id": "p:18",
+      "title": {
+        "en": "Pattern 18"
+      }
+    },
+    {
+      "id": "p:19",
+      "title": {
+        "en": "Two-colour fade (19)"
+      }
+    },
+    {
+      "id": "p:20",
+      "title": {
+        "en": "Static colours (20)"
+      }
+    },
+    {
+      "id": "p:21",
+      "title": {
+        "en": "Pattern 21"
+      }
+    },
+    {
+      "id": "p:22",
+      "title": {
+        "en": "Smooth rainbow (22)"
+      }
+    },
+    {
+      "id": "p:25",
+      "title": {
+        "en": "Colour chase (25)"
+      }
+    },
+    {
+      "id": "p:26",
+      "title": {
+        "en": "Two-colour pulse (26)"
+      }
+    },
+    {
+      "id": "p:27",
+      "title": {
+        "en": "Pattern 27"
+      }
+    },
+    {
+      "id": "p:28",
+      "title": {
+        "en": "Two-colour swap (28)"
+      }
+    },
+    {
+      "id": "p:29",
+      "title": {
+        "en": "Gradient shift (29)"
+      }
+    },
+    {
+      "id": "p:30",
+      "title": {
+        "en": "Pattern 30"
+      }
+    },
+    {
+      "id": "p:31",
+      "title": {
+        "en": "Pattern 31"
+      }
+    },
+    {
+      "id": "p:32",
+      "title": {
+        "en": "Smooth transition (32)"
+      }
+    },
+    {
+      "id": "p:33",
+      "title": {
+        "en": "Segment flow (33)"
+      }
+    },
+    {
+      "id": "p:34",
+      "title": {
+        "en": "Async breathing (34)"
+      }
+    },
+    {
+      "id": "p:35",
+      "title": {
+        "en": "Pattern 35"
+      }
+    },
+    {
+      "id": "p:36",
+      "title": {
+        "en": "Pattern 36"
+      }
+    },
+    {
+      "id": "p:37",
+      "title": {
+        "en": "Rainbow chase (37)"
+      }
+    }
+  ],
+  "insights": false
+}

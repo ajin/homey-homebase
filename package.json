@@ -1,0 +1,20 @@
+{
+  "name": "com.rxd7.homebase",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Local control of your devices on Homey Pro, without the cloud. First supported: Surplife / Zengge Bluetooth LED lights",
+  "main": "app.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit",
+    "test": "rm -rf build-test && tsc -p tsconfig.test.json && node --test \"build-test/test/**/*.test.js\"",
+    "validate": "npx --yes homey app validate --level publish",
+    "release-check": "node tools/release-check.js && npm test && npx --yes homey app validate --level publish"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/homey": "npm:homey-apps-sdk-v3-types@^1.8.3",
+    "@types/node": "^18.19.130",
+    "typescript": "^5.9.3"
+  }
+}

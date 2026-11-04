@@ -1,0 +1,207 @@
+{
+  "triggers": [
+    {
+      "id": "effect_changed",
+      "title": {
+        "en": "Effect changed"
+      },
+      "hint": {
+        "en": "Also fires when the effect is changed with the handheld remote or the phone app (while Homey is connected)."
+      },
+      "tokens": [
+        {
+          "name": "effect",
+          "type": "number",
+          "title": {
+            "en": "Pattern number (0 = static colour)"
+          },
+          "example": 5
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "title": {
+            "en": "Effect name"
+          },
+          "example": "Christmas 1"
+        }
+      ]
+    },
+    {
+      "id": "connection_lost",
+      "title": {
+        "en": "Bluetooth connection was lost unexpectedly"
+      }
+    },
+    {
+      "id": "connection_restored",
+      "title": {
+        "en": "Bluetooth connection was restored"
+      }
+    },
+    {
+      "id": "notification_received",
+      "title": {
+        "en": "Controller sent a message"
+      },
+      "hint": {
+        "en": "Diagnostic: fires for every decoded notification from the controller."
+      },
+      "tokens": [
+        {
+          "name": "opcode",
+          "type": "number",
+          "title": {
+            "en": "Opcode"
+          },
+          "example": 22
+        },
+        {
+          "name": "hex",
+          "type": "string",
+          "title": {
+            "en": "Payload (hex)"
+          },
+          "example": "8133..."
+        }
+      ]
+    }
+  ],
+  "conditions": [
+    {
+      "id": "is_connected",
+      "title": {
+        "en": "Bluetooth link !{{is|is not}} open"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "run_named_effect",
+      "title": {
+        "en": "Run effect"
+      },
+      "titleFormatted": {
+        "en": "Run effect [[effect]] at speed [[speed]]%"
+      },
+      "hint": {
+        "en": "Any effect from the library: named effects, the controller's patterns and your own effects from the app settings."
+      },
+      "args": [
+        {
+          "name": "effect",
+          "type": "autocomplete",
+          "placeholder": {
+            "en": "Search effects"
+          }
+        },
+        {
+          "name": "speed",
+          "type": "range",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "value": 80,
+          "labelDecimals": 0
+        }
+      ]
+    },
+    {
+      "id": "run_effect",
+      "title": {
+        "en": "Run built-in effect"
+      },
+      "titleFormatted": {
+        "en": "Run built-in effect [[effect]] at speed [[speed]]%"
+      },
+      "hint": {
+        "en": "The controller's own effects, the same ones the handheld remote cycles through: 1-11, 13-22 and 25-37."
+      },
+      "args": [
+        {
+          "name": "effect",
+          "type": "number",
+          "min": 1,
+          "max": 37,
+          "step": 1,
+          "placeholder": {
+            "en": "1-37"
+          }
+        },
+        {
+          "name": "speed",
+          "type": "range",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "value": 50,
+          "labelDecimals": 0
+        }
+      ]
+    },
+    {
+      "id": "query_state",
+      "title": {
+        "en": "Ask the controller for its state"
+      }
+    },
+    {
+      "id": "unpair_remotes",
+      "title": {
+        "en": "Unpair all remotes"
+      },
+      "hint": {
+        "en": "Removes every Bluetooth (radio) remote paired with this light. Infrared remotes are not affected."
+      }
+    },
+    {
+      "id": "send_raw",
+      "title": {
+        "en": "Send raw command (advanced)"
+      },
+      "titleFormatted": {
+        "en": "Send opcode [[opcode]] payload [[hex]] [[checksum]]"
+      },
+      "hint": {
+        "en": "Diagnostic: sends an arbitrary payload through the Zengge transport. Use only for reverse-engineering."
+      },
+      "args": [
+        {
+          "name": "opcode",
+          "type": "number",
+          "min": 0,
+          "max": 255,
+          "step": 1,
+          "placeholder": {
+            "en": "11"
+          }
+        },
+        {
+          "name": "hex",
+          "type": "text",
+          "placeholder": {
+            "en": "3b 23 00 00 00 00 00 00 00 00 00 00"
+          }
+        },
+        {
+          "name": "checksum",
+          "type": "dropdown",
+          "values": [
+            {
+              "id": "append",
+              "label": {
+                "en": "and append checksum"
+              }
+            },
+            {
+              "id": "none",
+              "label": {
+                "en": "as-is"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
