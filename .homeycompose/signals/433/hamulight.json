@@ -1,0 +1,13 @@
+{
+  "sof": [200, 200, 200, 200, 1200, 1200],
+  "words": [
+    [200, 600],
+    [600, 200]
+  ],
+  "eof": [200, 200, 200],
+  "interval": 2000,
+  "sensitivity": 0.4,
+  "repetitions": 10,
+  "minimalLength": 32,
+  "maximalLength": 32
+}

@@ -12,6 +12,7 @@ over time.
 | Device family | Connection | Add in Homey | Status | Models, features and limitations |
 |---------------|------------|--------------|--------|----------------------------------|
 | **Zengge Bluetooth lights** (set up with the Surplife app; sold under shop brands such as Quntis) | Bluetooth | Devices → + → Homebase → **Surplife Bluetooth Light** | ✅ Tested on one model; others untested | [Zengge Bluetooth lights](docs/devices/zengge-bluetooth-light.md) |
+| **Hamulight 433 MHz lights** (LED spots with an L2046 driver and a 433 MHz remote such as the HM3002) | 433 MHz radio | Devices → + → Homebase → **Hamulight Light (433 MHz)** | 🟡 Implemented, testing on real hardware | [Hamulight 433 MHz lights](docs/devices/hamulight.md) |
 
 ✅ tested on real hardware · 🟡 implemented, untested · ❌ not supported
 
@@ -95,13 +96,13 @@ device's model and technical ids (shown in its device settings).
 
 * Homey Pro with Homey firmware 12 or later. Homey Cloud is not supported (no Bluetooth, no local
   network access for apps).
-* Some device families need Bluetooth on the Homey; see their pages.
+* Some device families need Bluetooth or the 433 MHz radio on the Homey; see their pages.
 * For installing: a computer with Node.js 18 or later.
 
 ## Privacy and security
 
 * Everything stays on your local network: no accounts, no cloud services, no data leaves Homey.
-* The app asks Homey only for the permissions its devices need (currently Bluetooth).
+* The app asks Homey only for the permissions its devices need (currently Bluetooth and 433 MHz).
 * The app's API is only reachable with your Homey sign-in.
 
 ## Development

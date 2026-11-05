@@ -25,11 +25,15 @@
       "ble",
       "bluetooth",
       "christmas lights",
-      "led"
+      "led",
+      "hamulight",
+      "433 MHz",
+      "veranda"
     ]
   },
   "permissions": [
-    "homey:wireless:ble"
+    "homey:wireless:ble",
+    "homey:wireless:433"
   ],
   "images": {
     "small": "/assets/images/small.png",

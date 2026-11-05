@@ -1,0 +1,41 @@
+{
+  "name": {
+    "en": "Hamulight Light (433 MHz)"
+  },
+  "class": "light",
+  "capabilities": [
+    "onoff",
+    "dim"
+  ],
+  "capabilitiesOptions": {
+    "dim": {
+      "opts": {
+        "duration": false
+      }
+    }
+  },
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "rf433"
+  ],
+  "rf433": {
+    "satelliteMode": true
+  },
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "learn"
+    }
+  ],
+  "repair": [
+    {
+      "id": "learn"
+    }
+  ]
+}

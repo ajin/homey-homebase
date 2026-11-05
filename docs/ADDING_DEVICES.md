@@ -22,6 +22,7 @@ Current families:
 | Family | Driver | Library | User page | Technical notes |
 |--------|--------|---------|-----------|-----------------|
 | Zengge Bluetooth lights | `drivers/zengge-ble-light` | `lib/zengge/` | [devices/zengge-bluetooth-light.md](devices/zengge-bluetooth-light.md) | [zengge/](zengge/) |
+| Hamulight 433 MHz lights | `drivers/hamulight-433-light` | `lib/hamulight/` | [devices/hamulight.md](devices/hamulight.md) | [hamulight/](hamulight/) |
 
 ## Adding a new kind of device
 
@@ -103,4 +104,15 @@ the same `send(LightCommand)` / `request()` / `message` / `disconnect` surface a
 ```bash
 python3 -I tools/zengge/extract_catalog.py /path/to/decompiled/Surplife_sourcecode
 npm test
+```
+
+## Hamulight 433 MHz lights
+
+```
+.homeycompose/signals/433/hamulight.json  Homey signal definition (timings of one frame)
+lib/hamulight/protocol.ts           frame helpers, dim mapping, calculated dim codes (no Homey imports)
+lib/hamulight/learning.ts           learns on/off and ring codes from the user's remote
+lib/hamulight/radio.ts              shared 433 MHz signal: ref-counted receive, serialised sending
+drivers/hamulight-433-light/pair/   pairing/repair views: teach on/off, teach the ring
+tools/hamulight/make_images.py      driver images
 ```

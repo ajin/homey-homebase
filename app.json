@@ -26,11 +26,15 @@
       "ble",
       "bluetooth",
       "christmas lights",
-      "led"
+      "led",
+      "hamulight",
+      "433 MHz",
+      "veranda"
     ]
   },
   "permissions": [
-    "homey:wireless:ble"
+    "homey:wireless:ble",
+    "homey:wireless:433"
   ],
   "images": {
     "small": "/assets/images/small.png",
@@ -68,6 +72,22 @@
   },
   "flow": {
     "triggers": [
+      {
+        "id": "hamulight_remote_pressed",
+        "title": {
+          "en": "On/off button on the handheld remote was pressed"
+        },
+        "hint": {
+          "en": "Needs 'Follow the handheld remote' in the device settings, and Homey must be in range of the remote."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=hamulight-433-light"
+          }
+        ]
+      },
       {
         "id": "effect_changed",
         "title": {
@@ -163,22 +183,86 @@
         ]
       }
     ],
-    "conditions": [
+    "actions": [
       {
-        "id": "is_connected",
+        "id": "hamulight_toggle",
         "title": {
-          "en": "Bluetooth link !{{is|is not}} open"
+          "en": "Press the on/off button"
+        },
+        "hint": {
+          "en": "Sends the on/off code whatever Homey thinks the light is doing, and flips the state in Homey."
         },
         "args": [
           {
             "type": "device",
             "name": "device",
-            "filter": "driver_id=zengge-ble-light"
+            "filter": "driver_id=hamulight-433-light"
           }
         ]
-      }
-    ],
-    "actions": [
+      },
+      {
+        "id": "hamulight_set_state",
+        "title": {
+          "en": "Mark as [[state]] without sending"
+        },
+        "titleFormatted": {
+          "en": "Mark as [[state]] without sending"
+        },
+        "hint": {
+          "en": "Corrects Homey's on/off state when it got out of step with the light. Nothing is sent."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=hamulight-433-light"
+          },
+          {
+            "name": "state",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "on",
+                "label": {
+                  "en": "on"
+                }
+              },
+              {
+                "id": "off",
+                "label": {
+                  "en": "off"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hamulight_send_code",
+        "title": {
+          "en": "Send 433 MHz code"
+        },
+        "titleFormatted": {
+          "en": "Send 433 MHz code [[code]]"
+        },
+        "hint": {
+          "en": "For testing: sends a 32-bit Hamulight code given as 8 hex digits (shown in the app log when the remote is used)."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=hamulight-433-light"
+          },
+          {
+            "name": "code",
+            "type": "text",
+            "placeholder": {
+              "en": "351BA045"
+            }
+          }
+        ]
+      },
       {
         "id": "run_named_effect",
         "title": {
@@ -335,9 +419,221 @@
           }
         ]
       }
+    ],
+    "conditions": [
+      {
+        "id": "is_connected",
+        "title": {
+          "en": "Bluetooth link !{{is|is not}} open"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=zengge-ble-light"
+          }
+        ]
+      }
     ]
   },
   "drivers": [
+    {
+      "name": {
+        "en": "Hamulight Light (433 MHz)"
+      },
+      "class": "light",
+      "capabilities": [
+        "onoff",
+        "dim"
+      ],
+      "capabilitiesOptions": {
+        "dim": {
+          "opts": {
+            "duration": false
+          }
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "rf433"
+      ],
+      "rf433": {
+        "satelliteMode": true
+      },
+      "images": {
+        "small": "/drivers/hamulight-433-light/assets/images/small.png",
+        "large": "/drivers/hamulight-433-light/assets/images/large.png",
+        "xlarge": "/drivers/hamulight-433-light/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "learn"
+        }
+      ],
+      "repair": [
+        {
+          "id": "learn"
+        }
+      ],
+      "id": "hamulight-433-light",
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Learned remote"
+          },
+          "children": [
+            {
+              "id": "info_remote",
+              "type": "label",
+              "label": {
+                "en": "Remote id / on-off code"
+              },
+              "value": "-",
+              "hint": {
+                "en": "Learned when the light was added. Use 'Repair' on the device to teach the remote again."
+              }
+            },
+            {
+              "id": "info_levels",
+              "type": "label",
+              "label": {
+                "en": "Learned brightness levels"
+              },
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Radio"
+          },
+          "children": [
+            {
+              "id": "dim_source",
+              "type": "dropdown",
+              "label": {
+                "en": "Brightness codes"
+              },
+              "value": "ring",
+              "hint": {
+                "en": "'Ring position' builds the code for a position on the remote's brightness ring (HM3002 and similar remotes). 'Learned' replays codes captured from the ring during pairing. 'Calculated' uses the published encoding of another Hamulight remote."
+              },
+              "values": [
+                {
+                  "id": "ring",
+                  "label": {
+                    "en": "Ring position"
+                  }
+                },
+                {
+                  "id": "learned",
+                  "label": {
+                    "en": "Learned from my remote"
+                  }
+                },
+                {
+                  "id": "generated",
+                  "label": {
+                    "en": "Calculated (experimental)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "repetitions",
+              "type": "number",
+              "label": {
+                "en": "Frames per command"
+              },
+              "value": 3,
+              "min": 1,
+              "max": 3,
+              "hint": {
+                "en": "Frames sent back to back in one transmission (Homey allows at most 3). Repeating the transmission made the light sometimes see two presses."
+              }
+            },
+            {
+              "id": "on_brightness",
+              "type": "checkbox",
+              "label": {
+                "en": "Send brightness after switching on"
+              },
+              "value": false,
+              "hint": {
+                "en": "Sends the last brightness right after the on command, for lights that come on at a different level."
+              }
+            },
+            {
+              "id": "follow_remote",
+              "type": "checkbox",
+              "label": {
+                "en": "Follow the handheld remote"
+              },
+              "value": true,
+              "hint": {
+                "en": "Updates on/off and brightness in Homey when the handheld remote is used near Homey. Turn off to save Homey resources."
+              }
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Brightness ring"
+          },
+          "children": [
+            {
+              "id": "ring_dark",
+              "type": "text",
+              "label": {
+                "en": "Darkest position (hex)"
+              },
+              "value": "55",
+              "hint": {
+                "en": "Ring position (00-7F) Homey sends for the lowest brightness. Used with 'Ring position'."
+              }
+            },
+            {
+              "id": "ring_bright",
+              "type": "text",
+              "label": {
+                "en": "Brightest position (hex)"
+              },
+              "value": "5F",
+              "hint": {
+                "en": "Ring position (00-7F) Homey sends for full brightness."
+              }
+            },
+            {
+              "id": "ring_direction",
+              "type": "dropdown",
+              "label": {
+                "en": "Direction from darkest to brightest"
+              },
+              "value": "down",
+              "values": [
+                {
+                  "id": "down",
+                  "label": {
+                    "en": "Counting down (55, 54, … 00, 7F, … 5F)"
+                  }
+                },
+                {
+                  "id": "up",
+                  "label": {
+                    "en": "Counting up"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
     {
       "name": {
         "en": "Surplife Bluetooth Light"
@@ -1033,6 +1329,87 @@
       },
       "uiComponent": "slider",
       "insights": false
+    }
+  },
+  "signals": {
+    "433": {
+      "hamulight": {
+        "sof": [
+          200,
+          200,
+          200,
+          200,
+          1200,
+          1200
+        ],
+        "words": [
+          [
+            200,
+            600
+          ],
+          [
+            600,
+            200
+          ]
+        ],
+        "eof": [
+          200,
+          200,
+          200
+        ],
+        "interval": 2000,
+        "sensitivity": 0.4,
+        "repetitions": 10,
+        "minimalLength": 32,
+        "maximalLength": 32
+      },
+      "hamulight_tx": {
+        "agc": [
+          130,
+          200
+        ],
+        "sof": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          1200,
+          1200
+        ],
+        "words": [
+          [
+            200,
+            600
+          ],
+          [
+            600,
+            200
+          ],
+          [
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            200,
+            1200,
+            1200
+          ]
+        ],
+        "eof": [
+          200
+        ],
+        "interval": 200,
+        "minimalLength": 32,
+        "maximalLength": 98,
+        "txOnly": true
+      }
     }
   }
 }

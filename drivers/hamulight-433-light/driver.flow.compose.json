@@ -1,0 +1,77 @@
+{
+  "triggers": [
+    {
+      "id": "hamulight_remote_pressed",
+      "title": {
+        "en": "On/off button on the handheld remote was pressed"
+      },
+      "hint": {
+        "en": "Needs 'Follow the handheld remote' in the device settings, and Homey must be in range of the remote."
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "hamulight_toggle",
+      "title": {
+        "en": "Press the on/off button"
+      },
+      "hint": {
+        "en": "Sends the on/off code whatever Homey thinks the light is doing, and flips the state in Homey."
+      }
+    },
+    {
+      "id": "hamulight_set_state",
+      "title": {
+        "en": "Mark as [[state]] without sending"
+      },
+      "titleFormatted": {
+        "en": "Mark as [[state]] without sending"
+      },
+      "hint": {
+        "en": "Corrects Homey's on/off state when it got out of step with the light. Nothing is sent."
+      },
+      "args": [
+        {
+          "name": "state",
+          "type": "dropdown",
+          "values": [
+            {
+              "id": "on",
+              "label": {
+                "en": "on"
+              }
+            },
+            {
+              "id": "off",
+              "label": {
+                "en": "off"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hamulight_send_code",
+      "title": {
+        "en": "Send 433 MHz code"
+      },
+      "titleFormatted": {
+        "en": "Send 433 MHz code [[code]]"
+      },
+      "hint": {
+        "en": "For testing: sends a 32-bit Hamulight code given as 8 hex digits (shown in the app log when the remote is used)."
+      },
+      "args": [
+        {
+          "name": "code",
+          "type": "text",
+          "placeholder": {
+            "en": "351BA045"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+[
+  {
+    "type": "group",
+    "label": {
+      "en": "Learned remote"
+    },
+    "children": [
+      {
+        "id": "info_remote",
+        "type": "label",
+        "label": {
+          "en": "Remote id / on-off code"
+        },
+        "value": "-",
+        "hint": {
+          "en": "Learned when the light was added. Use 'Repair' on the device to teach the remote again."
+        }
+      },
+      {
+        "id": "info_levels",
+        "type": "label",
+        "label": {
+          "en": "Learned brightness levels"
+        },
+        "value": "0"
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Radio"
+    },
+    "children": [
+      {
+        "id": "dim_source",
+        "type": "dropdown",
+        "label": {
+          "en": "Brightness codes"
+        },
+        "value": "ring",
+        "hint": {
+          "en": "'Ring position' builds the code for a position on the remote's brightness ring (HM3002 and similar remotes). 'Learned' replays codes captured from the ring during pairing. 'Calculated' uses the published encoding of another Hamulight remote."
+        },
+        "values": [
+          {
+            "id": "ring",
+            "label": {
+              "en": "Ring position"
+            }
+          },
+          {
+            "id": "learned",
+            "label": {
+              "en": "Learned from my remote"
+            }
+          },
+          {
+            "id": "generated",
+            "label": {
+              "en": "Calculated (experimental)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "repetitions",
+        "type": "number",
+        "label": {
+          "en": "Frames per command"
+        },
+        "value": 3,
+        "min": 1,
+        "max": 3,
+        "hint": {
+          "en": "Frames sent back to back in one transmission (Homey allows at most 3). Repeating the transmission made the light sometimes see two presses."
+        }
+      },
+      {
+        "id": "on_brightness",
+        "type": "checkbox",
+        "label": {
+          "en": "Send brightness after switching on"
+        },
+        "value": false,
+        "hint": {
+          "en": "Sends the last brightness right after the on command, for lights that come on at a different level."
+        }
+      },
+      {
+        "id": "follow_remote",
+        "type": "checkbox",
+        "label": {
+          "en": "Follow the handheld remote"
+        },
+        "value": true,
+        "hint": {
+          "en": "Updates on/off and brightness in Homey when the handheld remote is used near Homey. Turn off to save Homey resources."
+        }
+      }
+    ]
+  },
+  {
+    "type": "group",
+    "label": {
+      "en": "Brightness ring"
+    },
+    "children": [
+      {
+        "id": "ring_dark",
+        "type": "text",
+        "label": {
+          "en": "Darkest position (hex)"
+        },
+        "value": "55",
+        "hint": {
+          "en": "Ring position (00-7F) Homey sends for the lowest brightness. Used with 'Ring position'."
+        }
+      },
+      {
+        "id": "ring_bright",
+        "type": "text",
+        "label": {
+          "en": "Brightest position (hex)"
+        },
+        "value": "5F",
+        "hint": {
+          "en": "Ring position (00-7F) Homey sends for full brightness."
+        }
+      },
+      {
+        "id": "ring_direction",
+        "type": "dropdown",
+        "label": {
+          "en": "Direction from darkest to brightest"
+        },
+        "value": "down",
+        "values": [
+          {
+            "id": "down",
+            "label": {
+              "en": "Counting down (55, 54, … 00, 7F, … 5F)"
+            }
+          },
+          {
+            "id": "up",
+            "label": {
+              "en": "Counting up"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

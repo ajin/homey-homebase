@@ -1,0 +1,154 @@
+<header class="homey-header">
+  <h1 class="homey-title" id="hl-title">Teach your remote</h1>
+  <p class="homey-subtitle" id="hl-subtitle">Homey listens on 433 MHz for your Hamulight remote.</p>
+</header>
+
+<!-- Step 1: on/off button -->
+<section id="hl-step1">
+  <ol class="hl-steps">
+    <li>Stand within a few metres of Homey with the remote.</li>
+    <li>Press the <b>on/off</b> button once.</li>
+  </ol>
+
+  <div id="hl-listening" class="hl-box">
+    <p><span class="hl-dot"></span> Listening&hellip; codes heard: <span id="hl-heard">none yet</span></p>
+  </div>
+
+  <div id="hl-found" class="hl-box hl-ok" style="display:none">
+    <p><b>Remote found.</b></p>
+    <p>Remote id <code id="hl-remote"></code>, on/off code <code id="hl-toggle"></code></p>
+    <button id="hl-test" class="homey-button-secondary-full">Test: send on/off now</button>
+    <p class="hl-hint">The light should switch after a few seconds (Homey takes a moment before it sends). If it does not, move the remote closer and tap "Start again".</p>
+    <p class="hl-hint" id="hl-calc-note" style="display:none">Brightness is calculated for this remote, so there is nothing more to teach.</p>
+  </div>
+
+  <details class="hl-manual">
+    <summary>Enter the on/off code yourself</summary>
+    <p class="hl-hint">If you captured the code with another receiver: 8 hex digits, e.g. 4516A050.</p>
+    <input id="hl-code" class="homey-form-input" type="text" maxlength="10" placeholder="4516A050">
+    <button id="hl-use-code" class="homey-button-secondary-full">Use this code</button>
+  </details>
+
+  <div class="hl-actions">
+    <button id="hl-restart" class="homey-button-secondary">Start again</button>
+    <button id="hl-next" class="homey-button-primary" disabled>Next</button>
+    <button id="hl-add" class="homey-button-primary" style="display:none">Add light</button>
+  </div>
+</section>
+
+<!-- Step 2: brightness ring -->
+<section id="hl-step2" style="display:none">
+  <ol class="hl-steps">
+    <li>Switch the light on with the remote.</li>
+    <li>Slide your finger <b>slowly</b> along the brightness ring, from <b>darkest</b> to <b>brightest</b>, once.</li>
+  </ol>
+
+  <div class="hl-box">
+    <p><span class="hl-dot"></span> Brightness levels learned: <b id="hl-count">0</b></p>
+    <p class="hl-hint">More levels give smoother dimming. If you went the wrong way, tap "Start again".</p>
+  </div>
+
+  <div class="hl-actions">
+    <button id="hl-back" class="homey-button-secondary">Back</button>
+    <button id="hl-again" class="homey-button-secondary">Start again</button>
+    <button id="hl-finish" class="homey-button-primary">Add light</button>
+  </div>
+  <p class="hl-hint" id="hl-skip-note">You can skip this: Homey then tries calculated brightness codes, which may not work with every remote. You can teach the ring later with Repair.</p>
+</section>
+
+<style>
+  .hl-steps { margin: 0 0 1em 1.2em; padding: 0; line-height: 1.5; }
+  .hl-box { border-radius: 8px; padding: 0.6em 0.9em; margin: 0.8em 0; background: var(--homey-color-mono-050, #f4f4f6); }
+  .hl-box.hl-ok { background: #e6f6ec; }
+  .hl-box p { margin: 0.3em 0; }
+  .hl-hint { font-size: 0.85em; opacity: 0.75; }
+  .hl-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2a9d8f; animation: hl-pulse 1.2s infinite; }
+  @keyframes hl-pulse { 50% { opacity: 0.2; } }
+  .hl-manual { margin: 1em 0; }
+  .hl-manual input { margin: 0.5em 0; }
+  .hl-actions { display: flex; gap: 0.6em; justify-content: space-between; margin-top: 1.2em; }
+  code { font-weight: 600; }
+</style>
+
+<script type="application/javascript">
+  (function () {
+    // Pairing views share one page: keep every name inside this function.
+    var el = function (id) { return document.getElementById(id); };
+    var mode = 'pair';
+    var calculated = false;
+    var step = 1;
+    var fail = function (err) { Homey.alert((err && err.message) || String(err), 'error'); };
+
+    function render(s) {
+      if (!s) return;
+      el('hl-heard').textContent = s.presses.length
+        ? s.presses.map(function (p) { return p.code + ' ×' + p.count; }).join(', ')
+        : 'none yet';
+      var found = !!s.toggle;
+      el('hl-found').style.display = found ? '' : 'none';
+      el('hl-listening').style.display = found ? 'none' : '';
+      calculated = !!s.calculated;
+      el('hl-next').disabled = !found;
+      // Remotes with the known checksum (HM3002 type): brightness is calculated, no ring step.
+      el('hl-next').style.display = found && calculated ? 'none' : '';
+      el('hl-add').style.display = found && calculated ? '' : 'none';
+      el('hl-calc-note').style.display = found && calculated ? '' : 'none';
+      if (found) {
+        el('hl-remote').textContent = s.remoteId;
+        el('hl-toggle').textContent = s.toggle;
+      }
+      el('hl-count').textContent = s.levels;
+      el('hl-skip-note').style.display = s.levels >= 2 ? 'none' : '';
+    }
+
+    function showStep(n) {
+      step = n;
+      el('hl-step1').style.display = n === 1 ? '' : 'none';
+      el('hl-step2').style.display = n === 2 ? '' : 'none';
+      el('hl-title').textContent = n === 1 ? 'Teach your remote' : 'Teach the brightness ring';
+      el('hl-subtitle').textContent = n === 1
+        ? 'Homey listens on 433 MHz for your Hamulight remote.'
+        : 'So Homey can dim the light to the same levels as your remote.';
+    }
+
+    Homey.on('status', render);
+    Homey.emit('start').then(function (r) {
+      mode = r.mode;
+      if (mode === 'repair') {
+        el('hl-finish').textContent = 'Save';
+        el('hl-add').textContent = 'Save';
+      }
+      render(r.status);
+    }).catch(fail);
+
+    el('hl-restart').addEventListener('click', function () { Homey.emit('restart').then(render).catch(fail); });
+    el('hl-test').addEventListener('click', function () {
+      var b = el('hl-test');
+      b.classList.add('is-loading');
+      Homey.emit('test_toggle').catch(fail).then(function () { b.classList.remove('is-loading'); });
+    });
+    el('hl-use-code').addEventListener('click', function () {
+      Homey.emit('manual_code', el('hl-code').value).then(render).catch(fail);
+    });
+    el('hl-next').addEventListener('click', function () {
+      Homey.emit('restart_levels').then(render).catch(fail);
+      showStep(2);
+    });
+    el('hl-back').addEventListener('click', function () { showStep(1); });
+    el('hl-again').addEventListener('click', function () { Homey.emit('restart_levels').then(render).catch(fail); });
+    function finish(b) {
+      b.classList.add('is-loading');
+      Homey.emit('finish').then(function (r) {
+        if (r && r.device) return Homey.createDevice(r.device);
+        return null;
+      }).then(function () {
+        Homey.done();
+      }).catch(function (err) {
+        b.classList.remove('is-loading');
+        fail(err);
+      });
+    }
+    el('hl-finish').addEventListener('click', function () { finish(el('hl-finish')); });
+    el('hl-add').addEventListener('click', function () { finish(el('hl-add')); });
+  })();
+</script>
