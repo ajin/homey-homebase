@@ -116,11 +116,6 @@ class HamulightDevice extends Homey.Device {
       if (String(this.settings.ring_dark).toUpperCase() === '4F') await this.setSettings({ ring_dark: '55' });
       await this.setStoreValue('ringDark55Migrated', true);
     }
-    // 3 frames per command proved too few (missed toggles); repeats no longer cost extra time.
-    if (!this.getStoreValue('repeats10Migrated')) {
-      if (this.settings.repetitions < 10) await this.setSettings({ repetitions: 10 });
-      await this.setStoreValue('repeats10Migrated', true);
-    }
     await this.updateListening();
     this.log(`Hamulight remote ${hex(this.learned.remoteId, 4)}, brightness from ${this.settings.dim_source}, ${this.learned.levels.length} learned level(s)`);
   }

@@ -14,13 +14,13 @@
 ## Frame format (verified against the published captures, see test/hamulight/protocol.test.ts)
 
 ```
-start  H200 L200 H200 L200 H1200 L1200
+start  H200 L200 H200 L200 H1200 L1200   (the real remote sends four short pairs, see below)
 bits   32 x (0 = H200 L600, 1 = H600 L200), most significant bit first
 end    H200 L200 H200
 ```
 
-The remote repeats a frame about ten times per press. Homey's signal definition is
-`.homeycompose/signals/433/hamulight.json`.
+This is the form Homey's receive definition matches (`.homeycompose/signals/433/hamulight.json`);
+sending uses `hamulight_tx.json`, which follows the real remote more closely (below).
 
 Decoding the aukedejong captures this way gives:
 
@@ -36,17 +36,23 @@ Decoding the aukedejong captures this way gives:
 | on/off | `4516 A050` (command `A0`, same as the L2046 capture above) |
 | brightness ring | `4516 3CEC`, `4516 3DED`, `4516 3EEE`, … (command = ring position) |
 
-A finger resting on the ring sends a steady stream, alternating between two neighbouring
-positions, for as long as it touches.
+Preset keys: `AA`, `A9`, `AF`, `A6` (25, 50, 75, 100 %), verified with this remote.
+
+With a weak battery the ring kept sending by itself: position `3C` every 1-5 s (and at first a
+steady stream alternating `3D`/`3E`), which pulled the brightness back down. A new battery
+stopped it.
 
 **Checksum:** byte 3 = (id high byte + id low byte + command + 0x55) & 0xFF. It holds for every
-HM3002 frame above and for the published `351B A045`. It does not hold for aukedejong's dim
-levels, which were fitted rather than captured, nor for the RFFHEM remote `3605` (on/off `5F47`,
-preset dims `553D`, `563E`, `5038`, `5941`), which seems to be another remote generation.
+HM3002 frame above, for the published `351B A045` and, once FHEM's inverted bit sense is undone,
+for the RFFHEM remote `3605` (below). It does not hold for aukedejong's dim levels, which were
+fitted rather than captured.
 
-Homebase learns the on/off code and the ring codes from the user's remote and replays them. A
-frame with command `A0` and a valid checksum is taken as on/off at once.
-The calculated brightness mode (setting *Brightness codes*) uses the aukedejong formula.
+Homebase learns only the remote id from the user's remote (a frame with command `A0` and a valid
+checksum is on/off at once) and builds every other frame itself: on/off, and brightness as a
+ring position (setting *Brightness codes* = *Ring position*). Recording ring codes during pairing
+is only used for remotes whose frames do not carry this checksum. The *Calculated (experimental)*
+option uses aukedejong's formula, whose frames fail the checksum; it is kept only for such
+remotes.
 
 ## How the real remote sends (confirmed 2026-11-05)
 
@@ -79,8 +85,8 @@ one unbroken transmission of 3 frames.
 
 Receiving: Homey hands frames to the app in batches. One remote press (10 frames, 0.3 s on air)
 arrived as 1-2 batches of 3-6 frames, up to 2.4 s apart; frames within a batch arrive within a few
-ms. Homebase therefore treats on/off repeats within 3 s as the same press.
-
+ms. Homebase therefore treats on/off repeats within 3 s as the same press. Homey also hears its
+own transmissions back (seen up to 3.4 s later), so the device ignores its own codes for 5 s.
 
 Send delay: with the app running as a development build (`homey app run`), every send took about
 4.7 s plus air time before the light reacted (measured with a dummy remote id: a predefined
@@ -91,10 +97,17 @@ unbroken transmission without repetitions reacts almost at once (2026-11-05, tim
 both the development build and Homey's repetitions add delay; measure installed builds before
 blaming the platform.
 
-Setting `carrier` to 433920000 made the light stop
-reacting (Homey's default carrier works).
+Setting `carrier` to 433920000 made the light stop reacting (Homey's default carrier works).
 
-## Open questions
+Satellite mode: with `"rf433": { "satelliteMode": true }` in the driver manifest and the device
+passed to `tx()`, the device gets an antenna choice (Homey Pro or a Homey Bridge) under Advanced
+settings. Both antennas reached the light.
 
-* The full range of HM3002 ring positions (darkest to brightest).
-* Whether a dim code switches the light on when it is off (the driver sends on/off first).
+## Answered during testing (2026-11-05)
+
+* **Ring range:** position `55` (darkest) counting down through `00`/`7F` to `5F` (brightest), from
+  the RFFHEM mapping. On the HM3002 light, brightness from Homey across this range (5-100 %) and
+  the remote's presets all set the expected levels. (One 33 % command was missed early on, before
+  the framing was fixed.)
+* **A brightness code does not switch the light on** when it is off: a 100 % code sent while the
+  light was off left it off. The driver sends on/off first.

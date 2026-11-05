@@ -109,10 +109,11 @@ npm test
 ## Hamulight 433 MHz lights
 
 ```
-.homeycompose/signals/433/hamulight.json  Homey signal definition (timings of one frame)
-lib/hamulight/protocol.ts           frame helpers, dim mapping, calculated dim codes (no Homey imports)
-lib/hamulight/learning.ts           learns on/off and ring codes from the user's remote
-lib/hamulight/radio.ts              shared 433 MHz signal: ref-counted receive, serialised sending
-drivers/hamulight-433-light/pair/   pairing/repair views: teach on/off, teach the ring
+.homeycompose/signals/433/hamulight.json     receive definition (timings of one frame)
+.homeycompose/signals/433/hamulight_tx.json  send definition (lead pulse, frames back to back)
+lib/hamulight/protocol.ts           frames, checksum, ring positions, presets, send plan (no Homey imports)
+lib/hamulight/learning.ts           learns the remote id (and ring codes for unknown remote types)
+lib/hamulight/radio.ts              shared 433 MHz signals: ref-counted receive, serialised sending
+drivers/hamulight-433-light/pair/   pairing page (repair/ holds the same page for Repair)
 tools/hamulight/make_images.py      driver images
 ```

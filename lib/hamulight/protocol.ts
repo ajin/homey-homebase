@@ -1,18 +1,13 @@
 /**
  * Hamulight L2046 433 MHz remote protocol (OOK, 200 us symbol).
  *
- * Every frame on air is:
- *   start  H200 L200 H200 L200 H1200 L1200
- *   32 bits, pulse-width coded: 0 = H200 L600, 1 = H600 L200
- *   end    H200 L200 H200
- * and the remote repeats it about ten times per press.
+ * A frame is a sync (H1200 L1200, preceded by short H200 L200 pairs), then 32 bits, pulse-width
+ * coded: 0 = H200 L600, 1 = H600 L200. The remote sends 10 identical frames back to back per press.
  *
- * Bits 0-15 are the remote id (different for every remote, which is why codes copied from another
- * installation do nothing). The meaning of bits 16-31 differs between remote generations:
- *   - aukedejong/esphome-hamulight (remote 351B): toggle = A045, dim ring = 0 + 15-bit level
- *   - RFFHEM issue 1206 (remote 3605): on/off = 5F47, preset dims 553D/563E/5038/5941
- * so this code does not rely on a command table: the app learns the frames of the user's own
- * remote and replays them. See docs/hamulight/RESEARCH.md.
+ * Bits: 16-bit remote id (each light only accepts the remote it learned), command byte, checksum
+ * byte = (id_hi + id_lo + command + 0x55) & 0xFF. Commands: A0 on/off (toggle), AA/A9/AF/A6 presets
+ * 25/50/75/100 %, 00-7F a position on the brightness ring. So the app only needs the user's remote
+ * id and builds every frame itself. See docs/hamulight/RESEARCH.md.
  *
  * No Homey imports here, so it can be unit tested.
  */

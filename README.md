@@ -12,7 +12,7 @@ over time.
 | Device family | Connection | Add in Homey | Status | Models, features and limitations |
 |---------------|------------|--------------|--------|----------------------------------|
 | **Zengge Bluetooth lights** (set up with the Surplife app; sold under shop brands such as Quntis) | Bluetooth | Devices → + → Homebase → **Surplife Bluetooth Light** | ✅ Tested on one model; others untested | [Zengge Bluetooth lights](docs/devices/zengge-bluetooth-light.md) |
-| **Hamulight 433 MHz lights** (LED spots with an L2046 driver and a 433 MHz remote such as the HM3002) | 433 MHz radio | Devices → + → Homebase → **Hamulight Light (433 MHz)** | 🟡 Implemented, testing on real hardware | [Hamulight 433 MHz lights](docs/devices/hamulight.md) |
+| **Hamulight 433 MHz lights** (LED spots with an L2046 driver and a 433 MHz remote such as the HM3002) | 433 MHz radio | Devices → + → Homebase → **Hamulight Light (433 MHz)** | ✅ Tested on one set (L2046 + HM3002) | [Hamulight 433 MHz lights](docs/devices/hamulight.md) |
 
 ✅ tested on real hardware · 🟡 implemented, untested · ❌ not supported
 

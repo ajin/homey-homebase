@@ -23,7 +23,7 @@ export interface LearnStatus {
  * Learns a remote in two steps, fed with frames from the radio (no Homey imports, unit tested):
  *  1. toggle: a frame with a valid checksum and the on/off command (A0) is the on/off button at
  *     once; other frames with a valid checksum (the ring) never are. A frame without a valid
- *     checksum (other remote generation) needs TOGGLE_PRESSES separate presses. Its first 16 bits
+ *     checksum (unknown remote type) needs TOGGLE_PRESSES separate presses. Its first 16 bits
  *     are the remote id.
  *  2. levels (only for remotes without the known checksum): the user slides along the brightness
  *     ring from darkest to brightest; every new frame of that remote (except on/off) becomes the
@@ -42,7 +42,7 @@ export class RemoteLearner {
       if (repeat) return false;
       const n = (this.pressCounts.get(frame) ?? 0) + 1;
       this.pressCounts.set(frame, n);
-      // Frames with a valid checksum come from a remote generation whose on/off command is known
+      // Frames with a valid checksum come from a remote type whose on/off command is known
       // (A0): only that command is on/off, so ring codes can never be taken for it. The
       // two-press rule is only for remotes whose frames do not follow the checksum rule.
       const valid = checksumOk(frame);
